@@ -15,18 +15,18 @@ public:
 
     RE::BSEventNotifyControl ProcessEvent(const RE::TESHitEvent* event, RE::BSTEventSource<RE::TESHitEvent>*) {
         auto lockLevel = event->target->GetLockLevel();
-        auto* player = RE::TESForm::LookupByID<RE::PlayerCharacter>(0x14);
+        //auto* player = RE::TESForm::LookupByID<RE::PlayerCharacter>(0x14);
 
-        auto* leftHandedEquip = player->GetEquippedObject(true);
-        auto* rightHandedEquip = player->GetEquippedObject(false); 
+        //auto* leftHandedEquip = player->GetEquippedObject(true);
+        //auto* rightHandedEquip = player->GetEquippedObject(false); 
 
-        if (leftHandedEquip) {
-            logger::info("Player left hand: {}", leftHandedEquip->GetName());
-        }
+        //if (leftHandedEquip) {
+        //    logger::info("Player left hand: {}", leftHandedEquip->GetName());
+        //}
 
-        if (rightHandedEquip) {
-            logger::info("Player right hand: {}", rightHandedEquip->GetName());
-        }
+        //if (rightHandedEquip) {
+        //    logger::info("Player right hand: {}", rightHandedEquip->GetName());
+        //}
 
         switch (lockLevel) {
             case RE::LOCK_LEVEL::kRequiresKey: {
@@ -35,6 +35,7 @@ public:
             }
             case RE::LOCK_LEVEL::kVeryEasy: {
                 logger::info("Novice lock");
+                UnlockObject(event->target->As<RE::TESObjectREFR>());
                 break;
             }
             case RE::LOCK_LEVEL::kEasy: {
@@ -58,5 +59,11 @@ public:
         }
 
         return RE::BSEventNotifyControl::kContinue;
+    }
+
+    private:
+    inline static void UnlockObject(RE::TESObjectREFR* refr) { 
+        logger::info("Unlocking object");
+        refr->GetLock()->SetLocked(false);
     }
 };

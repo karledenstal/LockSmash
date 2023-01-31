@@ -15,7 +15,6 @@ void SetupLog() {
     auto loggerPtr = std::make_shared<spdlog::logger>("log", std::move(fileLoggerPtr));
     spdlog::set_default_logger(std::move(loggerPtr));
     spdlog::set_level(spdlog::level::trace);
-    spdlog::set_pattern("%v");
     spdlog::flush_on(spdlog::level::trace);
 }
 

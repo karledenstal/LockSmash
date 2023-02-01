@@ -1,5 +1,8 @@
 #include "../../logger.h"
 
+// This is future feature hopefully
+// Melt locks using alchemy
+
 class LockMelt : public RE::BSTEventSink<RE::TESActivateEvent> {
     LockMelt() = default;
     LockMelt(const LockMelt&) = delete;
@@ -15,6 +18,7 @@ public:
 
     RE::BSEventNotifyControl ProcessEvent(const RE::TESActivateEvent* event,
                                           RE::BSTEventSource<RE::TESActivateEvent>*) {
+        logger::info("Activate event", event->objectActivated->GetName());
         return RE::BSEventNotifyControl::kContinue;
     };
 };

@@ -20,7 +20,7 @@ SKSEPluginLoad(const SKSE::LoadInterface *skse) {
 
     auto* eventSource = RE::ScriptEventSourceHolder::GetSingleton();
     eventSource->AddEventSink<RE::TESHitEvent>(LockSmash::GetSingleton());
-    eventSource->AddEventSink<RE::TESActivateEvent>(LockMelt::GetSingleton());
+    //eventSource->AddEventSink<RE::TESActivateEvent>(LockMelt::GetSingleton());
 
     return true;
 }

@@ -15,33 +15,24 @@ public:
 
     RE::BSEventNotifyControl ProcessEvent(const RE::TESHitEvent* event, RE::BSTEventSource<RE::TESHitEvent>*) {
         auto* attackSource = RE::TESForm::LookupByID<RE::TESObjectWEAP>(event->source);
-        auto* targetObject = event->target->As<RE::TESObjectREFR>();
-        auto causeOfAction = event->cause->GetFormID();
-        bool isPlayerResponsible = causeOfAction == 0x14;
 
-        if (targetObject && isPlayerResponsible) {
-            auto* targetLock = targetObject->GetLock();
+        if (event->target->IsLocked() && event->cause->GetFormID() == 0x14) {
+            auto* targetLock = event->target->GetLock();
             if (targetLock) {
-                if (targetLock->IsLocked()) {
-                    logger::info("Target is locked");
-                    TryToUnlock(attackSource, targetObject);
-                } else {
-                    logger::trace("Target is not locked");
-                }
+                logger::info("Target is locked");
+                TryToUnlock(attackSource, event->target);
             } else {
                 logger::trace("Target has no lock");
-                return RE::BSEventNotifyControl::kStop;
             }
         } else {
             logger::trace("Target is not an object");
-            return RE::BSEventNotifyControl::kStop;
         }
         
         return RE::BSEventNotifyControl::kContinue;
     }
 
     private:
-        inline static void TryToUnlock(RE::TESObjectWEAP* weapon, RE::TESObjectREFR* refr) {
+        inline static void TryToUnlock(RE::TESObjectWEAP* weapon, RE::TESObjectREFRPtr refr) {
             logger::info("ref: {}", refr->GetName());
             auto lockLevel = refr->GetLockLevel();
 
@@ -67,7 +58,7 @@ public:
                 return;
             }
 
-            HitThatLock(refr, weapon, formListId);
+            HitThatLock(refr->As<RE::TESObjectREFR>(), weapon, formListId);
         }
 
         inline static void HitThatLock(RE::TESObjectREFR* refr, RE::TESObjectWEAP* weapon, std::string_view formList) {
@@ -84,5 +75,19 @@ public:
             refr->GetLock()->SetLocked(false);
         
             RE::PlaySound("NPCHumanWoodChopSD");
+
+            // we need to make noise here
+            // alert nearby npcs
+
+            auto* player = RE::PlayerCharacter::GetSingleton();
+
+            if (refr->GetActorOwner() != player->GetActorBase()) {
+                // steal alarm?
+                // not sure how this works at all
+                player->StealAlarm(refr, NULL, 0, 0, refr->GetActorOwner(), false);
+                logger::info("This is not owned by the player!!");
+            } else {
+                logger::info("This is owned by the player");
+            }
         }
 };

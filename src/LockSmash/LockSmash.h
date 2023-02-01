@@ -36,16 +36,9 @@ public:
             logger::info("ref: {}", refr->GetName());
             auto lockLevel = refr->GetLockLevel();
 
-            if (weapon->HasKeywordString("WeapTypeBow")) {
-                RE::DebugNotification("Can't unlock with bow");
-                return;
-            }
+            std::string_view formListId = "_BF_VeryEasyLockMaterials";
 
-            std::string_view formListId;
-
-            if (lockLevel == RE::LOCK_LEVEL::kVeryEasy) {
-                formListId = "_BF_VeryEasyLockMaterials";
-            } else if (lockLevel == RE::LOCK_LEVEL::kEasy) {
+            if (lockLevel == RE::LOCK_LEVEL::kEasy) {
                 formListId = "_BF_EasyLockMaterials";
             } else if (lockLevel == RE::LOCK_LEVEL::kAverage) {
                 formListId = "_BF_AverageLockMaterials";
@@ -76,15 +69,12 @@ public:
         
             RE::PlaySound("NPCHumanWoodChopSD");
 
-            // we need to make noise here
-            // alert nearby npcs
-
             auto* player = RE::PlayerCharacter::GetSingleton();
 
             if (refr->GetActorOwner() != player->GetActorBase()) {
                 // steal alarm?
                 // not sure how this works at all
-                player->StealAlarm(refr, NULL, 0, 0, refr->GetActorOwner(), false);
+                player->StealAlarm(refr, refr->GetBaseObject(), 0, 0, refr->GetActorOwner(), false);
                 logger::info("This is not owned by the player!!");
             } else {
                 logger::info("This is owned by the player");

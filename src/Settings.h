@@ -13,12 +13,10 @@ class Settings {
         bool OnlyAllowTwoHanded();
         bool IsSkillRequirementEnabled();
         
-        float GetLockSkillReq(RE::LOCK_LEVEL lockLevel);
+        double GetLockSkillReq(RE::LOCK_LEVEL lockLevel);
         float GetForceMultiplier(BruteForce::WEAP_MATERIAL material);
     
-        struct BruteForceBasic {
-            void Load(CSimpleIniA& a_ini);
-        
+        struct BruteForceBasic {        
             bool bEnabled{true};
             bool bOnlyBlunt{false};
             bool bOnlyTwoHanded{false};
@@ -26,18 +24,14 @@ class Settings {
         } bruteForceBasic;
     
         struct Skills {
-            void Load(CSimpleIniA& a_ini);
-
-            float fNoviceSkill{0};
-            float fApprenticeSkill{25};
-            float fAdeptSkill{50};
-            float fExpertSkill{75};
-            float fMasterSkill{100};
+            double fNoviceSkill{0.0};
+            double fApprenticeSkill{25.0};
+            double fAdeptSkill{50.0};
+            double fExpertSkill{75.0};
+            double fMasterSkill{100.0};
         } skills;
 
         struct Multipliers {
-            void Load(CSimpleIniA& a_ini);
-
             float fIron{0.0f};
             float fSteel{0.2f};
             float fSilver{0.2f};

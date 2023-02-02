@@ -34,8 +34,6 @@ void BruteForce::UnlockObject(RE::TESObjectREFR* refr) {
     RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
 
     if (refr->GetActorOwner() != player->GetActorBase()) {
-        // steal alarm?
-        // not sure how this works at all
         player->StealAlarm(refr, refr->GetBaseObject(), 0, 0, refr->GetActorOwner(), false);
         logger::info("This is not owned by the player!!");
     } else {
@@ -54,7 +52,7 @@ void BruteForce::HitThatLock(RE::TESObjectREFR* refr, RE::TESObjectWEAP* weapon,
 
         bool IsTwoHanded = weapon->HasKeywordInList(RE::TESForm::LookupByEditorID<RE::BGSListForm>("_BF_TwoHandedTypes"), false);
 
-        float skillReq = settings->GetLockSkillReq(lockLevel);
+        double skillReq = settings->GetLockSkillReq(lockLevel);
         float skillLevel = player->GetActorValue(IsTwoHanded ? RE::ActorValue::kTwoHanded : RE::ActorValue::kOneHanded);
 
         logger::info("Skill level: {}", skillLevel);

@@ -30,9 +30,11 @@ class BruteForce : public RE::BSTEventSink<RE::TESHitEvent> {
         void UnlockObject(RE::TESObjectREFR* refr);
         void HitThatLock(RE::TESObjectREFR* refr, RE::TESObjectWEAP* weapon, std::string_view formList);
         std::string_view GetFormList(RE::TESObjectREFRPtr refr);
-        void UnlockWithTwoHandedOnly(RE::TESObjectREFR* refr, bool IsWeaponTwoHanded, bool PlayerSkillMatches);
-        void UnlockWithBluntOnly(RE::TESObjectREFR* refr, bool IsBluntWeapon, bool PlayerSkillMatches);
-        void UnlockWithBluntAndTwoHanded(RE::TESObjectREFR* refr, bool IsWeaponTwoHanded, bool PlayerSkillMatches);
-        void UnlockWithSkillReq(RE::TESObjectREFR* refr, bool IsUsingSkillRequirement);
-        void UnlockBasedOnMaterial(RE::TESObjectREFR* refr, bool IsUsingSkillRequirement);
+        void UnlockWithTwoHandedOnly(RE::TESObjectREFR* refr, RE::TESObjectWEAP* weapon, bool PlayerSkillMatches,
+                                     bool IsUsingSkillRequirement);
+        void UnlockWithBluntOnly(RE::TESObjectREFR* refr, RE::TESObjectWEAP* weapon, bool PlayerSkillMatches,
+                                 bool IsUsingSkillRequirement);
+        void UnlockWithBluntAndTwoHanded(RE::TESObjectREFR* refr, RE::TESObjectWEAP* weapon, bool PlayerSkillMatches,
+                                         bool IsUsingSkillRequirement);
+        void UnlockBasedOnMaterial(RE::TESObjectREFR* refr, bool IsUsingSkillRequirement, bool PlayerSkillMatches);
 };

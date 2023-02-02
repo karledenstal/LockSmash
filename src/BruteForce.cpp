@@ -67,6 +67,9 @@ void BruteForce::HitThatLock(RE::TESObjectREFR* refr, RE::TESObjectWEAP* weapon,
         logger::info("skillReq {}", skillReq);
         logger::info("skillLevel {}", skillLevel);
         logger::info("calculates {}", skillLevel >= skillReq);
+        logger::info("onlyBlunt {}", onlyBlunt);
+        logger::info("only2Handed {}", onlyTwoHanded);
+        logger::info("is skill a req {}", IsSkillARequirement);
 
         if (onlyTwoHanded && onlyBlunt) {
             UnlockWithBluntAndTwoHanded(refr, weapon, skillLevel >= skillReq, IsSkillARequirement);
@@ -75,7 +78,7 @@ void BruteForce::HitThatLock(RE::TESObjectREFR* refr, RE::TESObjectWEAP* weapon,
         } else if (onlyBlunt) {
             UnlockWithBluntOnly(refr, weapon, skillLevel >= skillReq, IsSkillARequirement, IsTwoHanded);
         } else {
-            UnlockBasedOnMaterial(refr, IsSkillARequirement, skillLevel >= skillReq, IsTwoHanded, weapon);
+            UnlockBasedOnMaterial(refr, IsTwoHanded, IsSkillARequirement, skillLevel >= skillReq, weapon);
         }
     } else {
         RE::DebugNotification("This lock is too sturdy for this weapon");
@@ -238,9 +241,10 @@ float BruteForce::CalculateFactors(RE::TESObjectREFR* refr, RE::PlayerCharacter*
     }
 
     float LockDiff = static_cast<float>(refr->GetLockLevel()) / 100;
+    logger::info("Lock diff: {}", LockDiff);
     float LuckFactor = 0.95f + static_cast<float>(rand()) * static_cast<float>(1.05f - 0.95f) / RAND_MAX;
     logger::info("Luck factor: {}", LuckFactor);
-    float PlayerForce = NormalizeFactor(Player->GetLevel(), 1.0, 81.0);
+    float PlayerForce = NormalizeFactor(static_cast<float>(Player->GetLevel()), 1.0, 81.0);
     logger::info("Player force: {}", PlayerForce);
     float WeaponSkill = NormalizeFactor(Player->GetActorBase()->GetActorValue(skill), 15.0, 100.0);
     logger::info("Weapon skill: {}", WeaponSkill);

@@ -1,4 +1,4 @@
-#include "../../logger.h"
+#include "../logger.h"
 
 // This is future feature hopefully
 // Melt locks using alchemy

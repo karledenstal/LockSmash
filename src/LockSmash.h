@@ -1,5 +1,3 @@
-#include "../../logger.h"
-
 class LockSmash : public RE::BSTEventSink<RE::TESHitEvent> {
     LockSmash() = default;
     LockSmash(const LockSmash&) = delete;

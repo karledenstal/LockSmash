@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h>
+#include "BruteForce.h"
 
 class Settings {
     public:
@@ -7,25 +8,31 @@ class Settings {
     
         void Load();
 
-        bool isBruteForceEnabled();
+        bool IsBruteForceEnabled();
+        bool OnlyAllowBlunt();
+        bool OnlyAllowTwoHanded();
+        bool IsSkillRequirementEnabled();
+        
+        double GetLockSkillReq(RE::LOCK_LEVEL lockLevel);
+        double GetForceMultiplier(BruteForce::WEAP_MATERIAL material);
     
-        struct BruteForce {
+        struct BruteForceBasic {
             void Load(CSimpleIniA& a_ini);
         
             bool bEnabled{true};
             bool bOnlyBlunt{false};
             bool bOnlyTwoHanded{false};
             bool bEnableSkillRequirement{true};
-        } bruteForce;
+        } bruteForceBasic;
     
         struct Skills {
             void Load(CSimpleIniA& a_ini);
 
-            std::uint32_t iNoviceSkill{0};
-            std::uint32_t iApprenticeSkill{25};
-            std::uint32_t iAdeptSkill{50};
-            std::uint32_t iExpertSkill{75};
-            std::uint32_t iMasterSkill{100};
+            double iNoviceSkill{0.0};
+            double iApprenticeSkill{25.0};
+            double iAdeptSkill{50.0};
+            double iExpertSkill{75.0};
+            double iMasterSkill{100.0};
         } skills;
 
         struct Multipliers {
@@ -40,7 +47,7 @@ class Settings {
             double fOrcish{0.6};
             double fNordic{0.5};
             double fEbony{0.75};
-            double fStahlrim{0.8};
+            double fStalhrim{0.8};
             double fGlass{0.7};
             double fDaedric{1.0};
             double fDragonbone{1.0};
@@ -53,6 +60,12 @@ class Settings {
                 if constexpr (std::is_same_v<bool, T>) {
                     a_value = a_ini.GetBoolValue(a_section, a_key, a_value);
                     a_ini.SetBoolValue(a_section, a_key, a_value, a_comment);
+                } else if constexpr (std::is_floating_point_v<T>) {
+                    a_value = static_cast<T>(a_ini.GetDoubleValue(a_section, a_key, a_value));
+                    a_ini.SetDoubleValue(a_section, a_key, a_value, a_comment);
+                } else {
+                    a_value = a_ini.GetValue(a_section, a_key, a_value.c_str());
+                    a_ini.SetValue(a_section, a_key, a_value.c_str(), a_comment);
                 }
             };
         };

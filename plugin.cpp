@@ -1,4 +1,3 @@
-#include "src/LockSmash.h"
 #include "src/Settings.h"
 
 void SetupLog() {
@@ -30,10 +29,10 @@ SKSEPluginLoad(const SKSE::LoadInterface *skse) {
     SKSE::GetMessagingInterface()->RegisterListener(OnInit);
 
     try {
-        if (Settings::GetSingleton()->isBruteForceEnabled()) {
+        if (Settings::GetSingleton()->IsBruteForceEnabled()) {
             logger::info("BruteForce: Enabled");
             auto* eventSource = RE::ScriptEventSourceHolder::GetSingleton();
-            eventSource->AddEventSink<RE::TESHitEvent>(LockSmash::GetSingleton());
+            eventSource->AddEventSink<RE::TESHitEvent>(BruteForce::GetSingleton());
         } else {
             logger::info("BruteForce: Disabled");
         }

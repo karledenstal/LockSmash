@@ -11,6 +11,22 @@ public:
         return &singleton;
     }
 
+    enum WeaponMaterial {
+        kIron,
+        kSteel,
+        kSilver,
+        kImperial,
+        kElven,
+        kDwarven,
+        kOrcish,
+        kNordic,
+        kEbony,
+        kStalhrim,
+        kGlass,
+        kDaedric,
+        kDragonbone,
+    };
+
     RE::BSEventNotifyControl ProcessEvent(const RE::TESHitEvent* event, RE::BSTEventSource<RE::TESHitEvent>*) {
         auto* attackSource = RE::TESForm::LookupByID<RE::TESObjectWEAP>(event->source);
 

@@ -64,13 +64,6 @@ void BruteForce::HitThatLock(RE::TESObjectREFR* refr, RE::TESObjectWEAP* weapon,
         double skillReq = settings->GetLockSkillReq(lockLevel);
         float skillLevel = player->GetActorValue(IsTwoHanded ? RE::ActorValue::kTwoHanded : RE::ActorValue::kOneHanded);
 
-        logger::info("skillReq {}", skillReq);
-        logger::info("skillLevel {}", skillLevel);
-        logger::info("calculates {}", skillLevel >= skillReq);
-        logger::info("onlyBlunt {}", onlyBlunt);
-        logger::info("only2Handed {}", onlyTwoHanded);
-        logger::info("is skill a req {}", IsSkillARequirement);
-
         if (onlyTwoHanded && onlyBlunt) {
             UnlockWithBluntAndTwoHanded(refr, weapon, skillLevel >= skillReq, IsSkillARequirement);
         } else if (onlyTwoHanded) {
@@ -240,20 +233,17 @@ float BruteForce::CalculateFactors(RE::TESObjectREFR* refr, RE::PlayerCharacter*
         fWeaponForce = 0.0;
     }
 
+    // TODO: LockDiff needs to be converted to float
     float LockDiff = static_cast<float>(refr->GetLockLevel()) / 100;
     logger::info("Lock diff: {}", LockDiff);
     float LuckFactor = 0.95f + static_cast<float>(rand()) * static_cast<float>(1.05f - 0.95f) / RAND_MAX;
-    logger::info("Luck factor: {}", LuckFactor);
+    // TODO: PlayerForce needs to be converted to float
     float PlayerForce = NormalizeFactor(static_cast<float>(Player->GetLevel()), 1.0, 81.0);
     logger::info("Player force: {}", PlayerForce);
     float WeaponSkill = NormalizeFactor(Player->GetActorBase()->GetActorValue(skill), 15.0, 100.0);
-    logger::info("Weapon skill: {}", WeaponSkill);
 
     float ForceFactor = (WeaponSkill * 0.35f) + (fWeaponForce * 0.2f) + (PlayerForce * 0.45f);
 
     int SuccessFactor = static_cast<int>((((PlayerForce + LuckFactor) / 2) * 50 > rand() % 100 + 1));
-    float Result = LockDiff - (ForceFactor * LuckFactor * SuccessFactor);
-    logger::info("Result {}", Result);
-
-    return Result;
+    return LockDiff - (ForceFactor * LuckFactor * SuccessFactor);
 }

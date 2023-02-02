@@ -28,6 +28,11 @@ class BruteForce : public RE::BSTEventSink<RE::TESHitEvent> {
 
     private:
         void UnlockObject(RE::TESObjectREFR* refr);
-        void TryToUnlock(RE::TESObjectWEAP* weapon, RE::TESObjectREFRPtr refr);
         void HitThatLock(RE::TESObjectREFR* refr, RE::TESObjectWEAP* weapon, std::string_view formList);
+        std::string_view GetFormList(RE::TESObjectREFRPtr refr);
+        void UnlockWithTwoHandedOnly(RE::TESObjectREFR* refr, bool IsWeaponTwoHanded, bool PlayerSkillMatches);
+        void UnlockWithBluntOnly(RE::TESObjectREFR* refr, bool IsBluntWeapon, bool PlayerSkillMatches);
+        void UnlockWithBluntAndTwoHanded(RE::TESObjectREFR* refr, bool IsWeaponTwoHanded, bool PlayerSkillMatches);
+        void UnlockWithSkillReq(RE::TESObjectREFR* refr, bool IsUsingSkillRequirement);
+        void UnlockBasedOnMaterial(RE::TESObjectREFR* refr, bool IsUsingSkillRequirement);
 };

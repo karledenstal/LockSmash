@@ -13,8 +13,8 @@ class Settings {
         bool OnlyAllowTwoHanded();
         bool IsSkillRequirementEnabled();
         
-        double GetLockSkillReq(RE::LOCK_LEVEL lockLevel);
-        double GetForceMultiplier(BruteForce::WEAP_MATERIAL material);
+        float GetLockSkillReq(RE::LOCK_LEVEL lockLevel);
+        float GetForceMultiplier(BruteForce::WEAP_MATERIAL material);
     
         struct BruteForceBasic {
             void Load(CSimpleIniA& a_ini);
@@ -28,29 +28,29 @@ class Settings {
         struct Skills {
             void Load(CSimpleIniA& a_ini);
 
-            double iNoviceSkill{0.0};
-            double iApprenticeSkill{25.0};
-            double iAdeptSkill{50.0};
-            double iExpertSkill{75.0};
-            double iMasterSkill{100.0};
+            float fNoviceSkill{0};
+            float fApprenticeSkill{25};
+            float fAdeptSkill{50};
+            float fExpertSkill{75};
+            float fMasterSkill{100};
         } skills;
 
         struct Multipliers {
             void Load(CSimpleIniA& a_ini);
 
-            double fIron{0.0};
-            double fSteel{0.2};
-            double fSilver{0.2};
-            double fImperial{0.3};
-            double fElven{0.4};
-            double fDwarven{0.4};
-            double fOrcish{0.6};
-            double fNordic{0.5};
-            double fEbony{0.75};
-            double fStalhrim{0.8};
-            double fGlass{0.7};
-            double fDaedric{1.0};
-            double fDragonbone{1.0};
+            float fIron{0.0f};
+            float fSteel{0.2f};
+            float fSilver{0.2f};
+            float fImperial{0.3f};
+            float fElven{0.4f};
+            float fDwarven{0.4f};
+            float fOrcish{0.6f};
+            float fNordic{0.5f};
+            float fEbony{0.7f};
+            float fStalhrim{0.8f};
+            float fGlass{0.7f};
+            float fDaedric{1.0f};
+            float fDragonbone{1.0f};
         } multipliers;
 
     private: 

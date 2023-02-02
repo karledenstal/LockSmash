@@ -1,4 +1,5 @@
 #include "BruteForce.h"
+#include "Settings.h"
 
 BruteForce* BruteForce::GetSingleton() {
     static BruteForce singleton;
@@ -12,7 +13,8 @@ RE::BSEventNotifyControl BruteForce::ProcessEvent(const RE::TESHitEvent* event, 
         auto* targetLock = event->target->GetLock();
         if (targetLock) {
             logger::info("Target is locked");
-            TryToUnlock(attackSource, event->target);
+            auto formListId = GetFormList(event->target);
+            HitThatLock(event->target->As<RE::TESObjectREFR>(), attackSource, formListId);
         } else {
             logger::trace("Target has no lock");
         }
@@ -43,6 +45,45 @@ void BruteForce::UnlockObject(RE::TESObjectREFR* refr) {
 
 void BruteForce::HitThatLock(RE::TESObjectREFR* refr, RE::TESObjectWEAP* weapon, std::string_view formList) {
     if (weapon->HasKeywordInList(RE::TESForm::LookupByEditorID<RE::BGSListForm>(formList), false)) {
+        auto* settings = Settings::GetSingleton();
+        bool onlyBlunt = settings->OnlyAllowBlunt();
+        bool onlyTwoHanded = settings->OnlyAllowTwoHanded();
+        bool isSkillARequirement = settings->IsSkillRequirementEnabled();
+
+        if (isSkillARequirement) {
+            auto lockLevel = refr->GetLockLevel();
+            auto* player = RE::PlayerCharacter::GetSingleton()->GetActorBase();
+            float skillReq = settings->GetLockSkillReq(lockLevel);
+            bool IsTwoHanded = weapon->HasKeywordInList(RE::TESForm::LookupByEditorID<RE::BGSListForm>("_BF_TwoHandedTypes"), false);
+            bool IsBlunt = weapon->HasKeywordInList(RE::TESForm::LookupByEditorID<RE::BGSListForm>("_BF_BluntWeapons"), false);
+            auto skillLevel = player->GetActorValue(IsTwoHanded ? RE::ActorValue::kTwoHanded : RE::ActorValue::kOneHanded);
+            
+            bool PlayerSkillIsBetterOrEqual = skillLevel >= skillReq;
+            
+            logger::info("skill level: {}", skillLevel);
+            logger::info("skill req: {}", skillReq);
+
+            if (onlyTwoHanded) {
+                if (IsTwoHanded && PlayerSkillIsBetterOrEqual) {
+                    UnlockObject(refr);
+                    return;
+                } else if (IsTwoHanded && !PlayerSkillIsBetterOrEqual) {
+                    RE::DebugNotification("I'm not strong enough to break this lock");
+                } else if (!IsTwoHanded && PlayerSkillIsBetterOrEqual) {
+                    RE::DebugNotification("Only a two handed weapon could break this lock");
+                } else {
+                    RE::DebugNotification("This lock won't budge");
+                }
+            }
+            
+            if (skillLevel >= skillReq && !onlyTwoHanded && !onlyBlunt) {
+                UnlockObject(refr);
+                return;
+            } else {
+                RE::DebugNotification("I'm not strong enough to break this lock");
+            }
+        }
+        
         logger::info("This weapon can break this lock");
         UnlockObject(refr);
     } else {
@@ -50,24 +91,20 @@ void BruteForce::HitThatLock(RE::TESObjectREFR* refr, RE::TESObjectWEAP* weapon,
     }
 }
 
-void BruteForce::TryToUnlock(RE::TESObjectWEAP* weapon, RE::TESObjectREFRPtr refr) {
-    logger::info("ref: {}", refr->GetName());
+std::string_view BruteForce::GetFormList(RE::TESObjectREFRPtr refr) {
     auto lockLevel = refr->GetLockLevel();
 
-    std::string_view formListId = "_BF_VeryEasyLockMaterials";
-
-    if (lockLevel == RE::LOCK_LEVEL::kEasy) {
-        formListId = "_BF_EasyLockMaterials";
-    } else if (lockLevel == RE::LOCK_LEVEL::kAverage) {
-        formListId = "_BF_AverageLockMaterials";
-    } else if (lockLevel == RE::LOCK_LEVEL::kHard) {
-        formListId = "_BF_HardLockMaterials";
-    } else if (lockLevel == RE::LOCK_LEVEL::kVeryHard) {
-        formListId = "_BF_VeryHardLockMaterials";
-    } else if (lockLevel == RE::LOCK_LEVEL::kRequiresKey) {
-        RE::DebugNotification("This lock requires a key");
-        return;
+	if (lockLevel == RE::LOCK_LEVEL::kEasy) {
+		return "_BF_EasyLockMaterials";
+	} else if (lockLevel == RE::LOCK_LEVEL::kAverage) {
+		return "_BF_AverageLockMaterials";
+	} else if (lockLevel == RE::LOCK_LEVEL::kHard) {
+		return "_BF_HardLockMaterials";
+	} else if (lockLevel == RE::LOCK_LEVEL::kVeryHard) {
+		return "_BF_VeryHardLockMaterials";
+    } else if (lockLevel == RE::LOCK_LEVEL::kVeryEasy) {
+        return "_BF_VeryEasyLockMaterials";
+    } else {
+        return "";
     }
-
-    HitThatLock(refr->As<RE::TESObjectREFR>(), weapon, formListId);
 }

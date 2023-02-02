@@ -14,7 +14,8 @@ class Settings {
         bool IsSkillRequirementEnabled();
         
         double GetLockSkillReq(RE::LOCK_LEVEL lockLevel);
-        float GetForceMultiplier(BruteForce::WEAP_MATERIAL material);
+        float GetForceMultiplier(const char* a_key);
+        float GetSkillIncreaseAmount(const char* level);
     
         struct BruteForceBasic {        
             bool bEnabled{true};
@@ -29,6 +30,11 @@ class Settings {
             double fAdeptSkill{50.0};
             double fExpertSkill{75.0};
             double fMasterSkill{100.0};
+            float fNoviceSkillIncrease{15.0f};
+            float fApprenticeSkillIncrease{25.0f};
+            float fAdeptSkillIncrease{35.0f};
+            float fExpertSkillIncrease{55.0f};
+            float fMasterSkillIncrease{75.0f};
         } skills;
 
         struct Multipliers {

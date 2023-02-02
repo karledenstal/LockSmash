@@ -24,11 +24,13 @@ bool Settings::IsBruteForceEnabled() {
 
     ini.LoadFile(path);
 
-    if (ini.GetBoolValue("BruteForce", "bEnabled", true)) {
+    bool IsEnabled = ini.GetBoolValue("BruteForceBasic", "bEnabled", true);
+
+    if (IsEnabled) {
         Load();
     }
 
-    return ini.GetBoolValue("BruteForce", "bEnabled", true);
+    return IsEnabled;
 }
 
 bool Settings::OnlyAllowBlunt() {
@@ -39,7 +41,7 @@ bool Settings::OnlyAllowBlunt() {
 
     ini.LoadFile(path);
 
-    return ini.GetBoolValue("BruteForce", "bOnlyBlunt", false);
+    return ini.GetBoolValue("BruteForceBasic", "bOnlyBlunt", false);
 }
 
 bool Settings::OnlyAllowTwoHanded() {
@@ -50,7 +52,7 @@ bool Settings::OnlyAllowTwoHanded() {
 
     ini.LoadFile(path);
 
-    return ini.GetBoolValue("BruteForce", "bOnlyTwoHanded", false);
+    return ini.GetBoolValue("BruteForceBasic", "bOnlyTwoHanded", false);
 }
 
 bool Settings::IsSkillRequirementEnabled() {
@@ -61,7 +63,7 @@ bool Settings::IsSkillRequirementEnabled() {
 
     ini.LoadFile(path);
 
-    return ini.GetBoolValue("BruteForce", "bEnableSkillRequirement", true);
+    return ini.GetBoolValue("BruteForceBasic", "bEnableSkillRequirement", true);
 }
 
 double Settings::GetLockSkillReq(RE::LOCK_LEVEL lockLevel) { 
@@ -97,12 +99,10 @@ double Settings::GetLockSkillReq(RE::LOCK_LEVEL lockLevel) {
             logger::info("very Easy lock");
             return ini.GetDoubleValue("Skills", "fNoviceSkill");
         }
-
-
     }
 }
 
-float Settings::GetForceMultiplier(BruteForce::WEAP_MATERIAL material) {
+float Settings::GetSkillIncreaseAmount(const char* level) {
     constexpr auto path = L"Data/SKSE/Plugins/BruteForce.ini";
 
     CSimpleIniA ini;
@@ -110,32 +110,16 @@ float Settings::GetForceMultiplier(BruteForce::WEAP_MATERIAL material) {
 
     ini.LoadFile(path);
 
-    switch (material) { 
-        case BruteForce::kIron:
-            return static_cast<float>(ini.GetDoubleValue("Multipliers", "fIron"));
-        case BruteForce::kSteel:
-            return static_cast<float>(ini.GetDoubleValue("Multipliers", "fSteel"));
-        case BruteForce::kSilver:
-            return static_cast<float>(ini.GetDoubleValue("Multipliers", "fSilver"));
-        case BruteForce::kImperial:
-            return static_cast<float>(ini.GetDoubleValue("Multipliers", "fIron"));
-        case BruteForce::kElven:
-            return static_cast<float>(ini.GetDoubleValue("Multipliers", "fElven"));
-        case BruteForce::kDwarven:
-            return static_cast<float>(ini.GetDoubleValue("Multipliers", "fDwarven"));
-        case BruteForce::kOrcish:
-            return static_cast<float>(ini.GetDoubleValue("Multipliers", "fOrcish"));
-        case BruteForce::kNordic:
-            return static_cast<float>(ini.GetDoubleValue("Multipliers", "fNordic"));
-        case BruteForce::kEbony:
-            return static_cast<float>(ini.GetDoubleValue("Multipliers", "fEbony"));
-        case BruteForce::kStalhrim:
-            return static_cast<float>(ini.GetDoubleValue("Multipliers", "fStalhrim"));
-        case BruteForce::kDaedric:
-            return static_cast<float>(ini.GetDoubleValue("Multipliers", "fDaedric"));
-        case BruteForce::kDragonbone:
-            return static_cast<float>(ini.GetDoubleValue("Multipliers", "fDragonbone"));
-        default:
-            return 0.0;
-    }
+    return static_cast<float>(ini.GetDoubleValue("Skills", level));
+}
+
+float Settings::GetForceMultiplier(const char* a_key) {
+    constexpr auto path = L"Data/SKSE/Plugins/BruteForce.ini";
+
+    CSimpleIniA ini;
+    ini.SetUnicode();
+
+    ini.LoadFile(path);
+
+    return static_cast<float>(ini.GetDoubleValue("Multipliers", a_key));
 }

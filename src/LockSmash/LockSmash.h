@@ -16,17 +16,21 @@ public:
     RE::BSEventNotifyControl ProcessEvent(const RE::TESHitEvent* event, RE::BSTEventSource<RE::TESHitEvent>*) {
         auto* attackSource = RE::TESForm::LookupByID<RE::TESObjectWEAP>(event->source);
 
-        if (event->target->IsLocked() && event->cause->GetFormID() == 0x14) {
-            auto* targetLock = event->target->GetLock();
-            if (targetLock) {
-                logger::info("Target is locked");
-                TryToUnlock(attackSource, event->target);
+        if (attackSource) {
+            if (event->target->IsLocked() && event->cause->GetFormID() == 0x14) {
+                auto* targetLock = event->target->GetLock();
+                if (targetLock) {
+                    logger::info("Target is locked");
+                    TryToUnlock(attackSource, event->target);
+                } else {
+                    logger::trace("Target has no lock");
+                }
             } else {
-                logger::trace("Target has no lock");
+                logger::trace("Target is not an object");
             }
-        } else {
-            logger::trace("Target is not an object");
         }
+
+
         
         return RE::BSEventNotifyControl::kContinue;
     }

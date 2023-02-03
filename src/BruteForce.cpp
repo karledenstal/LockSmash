@@ -7,23 +7,27 @@ BruteForce* BruteForce::GetSingleton() {
 }
 
 RE::BSEventNotifyControl BruteForce::ProcessEvent(const RE::TESHitEvent* event, RE::BSTEventSource<RE::TESHitEvent>*) {
-    RE::TESObjectWEAP* attackSource = RE::TESForm::LookupByID<RE::TESObjectWEAP>(event->source);
+    RE::TESObjectWEAP* attackSourceWeapon = RE::TESForm::LookupByID<RE::TESObjectWEAP>(event->source);
 
-    if (attackSource->GetWeaponType() == RE::WEAPON_TYPE::kBow ||
-        attackSource->GetWeaponType() == RE::WEAPON_TYPE::kCrossbow) {
-        RE::DebugNotification("I can't destroy this lock with a bow");
-    } else if (event->target->IsLocked() && event->cause->GetFormID() == 0x14) {
-        RE::REFR_LOCK* targetLock = event->target->GetLock();
-        if (targetLock) {
-            logger::info("Target is locked");
-            std::string_view formListId = GetFormList(event->target);
-            HitThatLock(event->target->As<RE::TESObjectREFR>(), attackSource, formListId);
+    if (attackSourceWeapon) {
+        if (attackSourceWeapon->GetWeaponType() == RE::WEAPON_TYPE::kBow ||
+            attackSourceWeapon->GetWeaponType() == RE::WEAPON_TYPE::kCrossbow) {
+            RE::DebugNotification("I can't destroy this lock with a bow");
+        } else if (event->target->IsLocked() && event->cause->GetFormID() == 0x14) {
+            RE::REFR_LOCK* targetLock = event->target->GetLock();
+            if (targetLock) {
+                logger::info("Target is locked");
+                std::string_view formListId = GetFormList(event->target);
+                HitThatLock(event->target->As<RE::TESObjectREFR>(), attackSourceWeapon, formListId);
+            } else {
+                logger::trace("Target has no lock");
+            }
         } else {
-            logger::trace("Target has no lock");
+            logger::trace("Target is not an object");
         }
-    } else {
-        logger::trace("Target is not an object");
     }
+
+
 
     return RE::BSEventNotifyControl::kContinue;
 }
@@ -238,7 +242,7 @@ float BruteForce::CalculateFactors(RE::TESObjectREFR* refr, RE::PlayerCharacter*
     logger::info("Lock diff: {}", LockDiff);
     float LuckFactor = 0.95f + static_cast<float>(rand()) * static_cast<float>(1.05f - 0.95f) / RAND_MAX;
     // TODO: PlayerForce needs to be converted to float
-    float PlayerForce = NormalizeFactor(static_cast<float>(Player->GetLevel()), 1.0, 81.0);
+    float PlayerForce = NormalizeFactor(Player->GetLevel(), 1.0, 81.0);
     logger::info("Player force: {}", PlayerForce);
     float WeaponSkill = NormalizeFactor(Player->GetActorBase()->GetActorValue(skill), 15.0, 100.0);
 

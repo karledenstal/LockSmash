@@ -29,8 +29,8 @@ class BruteForce : public RE::BSTEventSink<RE::TESHitEvent> {
         };
 
     private:
-        float NormalizeFactor(float a_level, float a_min, float a_max);
-        void UnlockObject(RE::TESObjectREFR* refr, bool IsTwoHanded, RE::TESObjectWEAP* weapon);
+        //float NormalizeValue(float afValue, float afMin, float afMax);
+        void UnlockObject(RE::TESObjectREFR* refr, bool IsTwoHanded);
         void HitThatLock(RE::TESObjectREFR* refr, RE::TESObjectWEAP* weapon, std::string_view formList);
         std::string_view GetFormList(RE::TESObjectREFRPtr refr);
         void UnlockWithTwoHandedOnly(RE::TESObjectREFR* refr, RE::TESObjectWEAP* weapon, bool PlayerSkillMatches,
@@ -40,8 +40,8 @@ class BruteForce : public RE::BSTEventSink<RE::TESHitEvent> {
         void UnlockWithBluntAndTwoHanded(RE::TESObjectREFR* refr, RE::TESObjectWEAP* weapon, bool PlayerSkillMatches,
                                          bool IsUsingSkillRequirement);
         void UnlockBasedOnMaterial(RE::TESObjectREFR* refr, bool IsWeaponTwoHanded, bool IsUsingSkillRequirement,
-                                   bool PlayerSkillMatches, RE::TESObjectWEAP* weapon);
+                                   bool PlayerSkillMatches);
         void IncreaseSkillExperience(RE::ActorValue SkillToIncrease, RE::LOCK_LEVEL lockLevel,
                                      RE::PlayerCharacter* player);
-        float CalculateFactors(RE::TESObjectREFR* refr, RE::PlayerCharacter* Player, RE::TESObjectWEAP* weapon, RE::ActorValue skill);
+        //float GetSuccessChance(RE::TESObjectREFR* refr, RE::TESObjectWEAP* weapon, RE::ActorValue SkillUsed);
 };

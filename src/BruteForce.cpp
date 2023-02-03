@@ -26,31 +26,29 @@ RE::BSEventNotifyControl BruteForce::ProcessEvent(const RE::TESHitEvent* event, 
             logger::trace("Target is not an object");
         }
     }
-
-
-
     return RE::BSEventNotifyControl::kContinue;
 }
 
-void BruteForce::UnlockObject(RE::TESObjectREFR* refr, bool IsTwoHanded, RE::TESObjectWEAP* weapon) {
+void BruteForce::UnlockObject(RE::TESObjectREFR* refr, bool IsTwoHanded) {
     logger::info("Unlocking object");
     RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
-    float factorsCombined = CalculateFactors(refr, player, weapon, IsTwoHanded ? RE::ActorValue::kTwoHanded : RE::ActorValue::kOneHanded);
 
-    if (factorsCombined < 0.0) {
-        refr->GetLock()->SetLocked(false);
-        RE::PlaySound("NPCHumanWoodChopSD");
+    refr->GetLock()->SetLocked(false);
+    RE::PlaySound("NPCHumanWoodChopSD");
 
-        IncreaseSkillExperience(IsTwoHanded ? RE::ActorValue::kTwoHanded : RE::ActorValue::kOneHanded, refr->GetLockLevel(), player);
+    IncreaseSkillExperience(IsTwoHanded ? RE::ActorValue::kTwoHanded : RE::ActorValue::kOneHanded, refr->GetLockLevel(), player);
 
-        if (refr->GetActorOwner() != player->GetActorBase()) {
-            player->StealAlarm(refr, refr->GetBaseObject(), 0, 0, refr->GetActorOwner(), false);
-            logger::info("This is not owned by the player!!");
-        } else {
-            logger::info("This is owned by the player");
-        }
+    bool IsAContainer = refr->HasContainer();
+
+    if (refr->GetActorOwner() != player->GetActorBase() && IsAContainer) {
+        logger::info("Is a container");
+        player->StealAlarm(refr, refr->GetBaseObject(), 0, 0, refr->GetActorOwner(), true);
+        logger::info("This is not owned by the player!!");
+    } else if (refr->GetActorOwner() != player->GetActorBase() && !IsAContainer) {
+        logger::info("This is not a container");
+        player->TrespassAlarm(refr, refr->GetActorOwner(), 25);
     } else {
-        RE::DebugNotification("This lock is too difficult to break open");
+        logger::info("This is owned by the player");
     }
 };
 
@@ -75,7 +73,7 @@ void BruteForce::HitThatLock(RE::TESObjectREFR* refr, RE::TESObjectWEAP* weapon,
         } else if (onlyBlunt) {
             UnlockWithBluntOnly(refr, weapon, skillLevel >= skillReq, IsSkillARequirement, IsTwoHanded);
         } else {
-            UnlockBasedOnMaterial(refr, IsTwoHanded, IsSkillARequirement, skillLevel >= skillReq, weapon);
+            UnlockBasedOnMaterial(refr, IsTwoHanded, IsSkillARequirement, skillLevel >= skillReq);
         }
     } else {
         RE::DebugNotification("This lock is too sturdy for this weapon");
@@ -106,7 +104,7 @@ void BruteForce::UnlockWithTwoHandedOnly(RE::TESObjectREFR* refr, RE::TESObjectW
 
     if (IsUsingSkillRequirement) {
         if (IsWeaponTwoHanded && PlayerSkillMatches) {
-            UnlockObject(refr, true, weapon);
+            UnlockObject(refr, true);
         } else if (IsWeaponTwoHanded && !PlayerSkillMatches) {
             RE::DebugNotification("I'm not strong enough to break this lock");
         } else if (!IsWeaponTwoHanded) {
@@ -116,7 +114,7 @@ void BruteForce::UnlockWithTwoHandedOnly(RE::TESObjectREFR* refr, RE::TESObjectW
         }
     } else {
         if (IsWeaponTwoHanded) {
-            UnlockObject(refr, true, weapon);
+            UnlockObject(refr, true);
         } else {
             RE::DebugNotification("Only a two handed weapon could break this lock");
         }
@@ -129,7 +127,7 @@ void BruteForce::UnlockWithBluntOnly(RE::TESObjectREFR* refr, RE::TESObjectWEAP*
 
     if (IsUsingSkillRequirement) {
         if (IsBluntWeapon && PlayerSkillMatches) {
-            UnlockObject(refr, IsWeaponTwoHanded, weapon);
+            UnlockObject(refr, IsWeaponTwoHanded);
         } else if (IsBluntWeapon && !PlayerSkillMatches) {
             RE::DebugNotification("I'm not strong enough to break this lock");
         } else if (!IsBluntWeapon) {
@@ -139,7 +137,7 @@ void BruteForce::UnlockWithBluntOnly(RE::TESObjectREFR* refr, RE::TESObjectWEAP*
         }
     } else {
         if (IsBluntWeapon) {
-            UnlockObject(refr, IsWeaponTwoHanded, weapon);
+            UnlockObject(refr, IsWeaponTwoHanded);
         } else {
             RE::DebugNotification("Only a blunt weapon could break this lock");
         }
@@ -152,7 +150,7 @@ void BruteForce::UnlockWithBluntAndTwoHanded(RE::TESObjectREFR* refr, RE::TESObj
     bool IsWeaponWarhammer = weapon->HasKeywordString("WeapTypeWarhammer");
     if (IsUsingSkillRequirement) {
         if (IsWeaponWarhammer && PlayerSkillMatches) {
-            UnlockObject(refr, true, weapon);
+            UnlockObject(refr, true);
         } else if (IsWeaponWarhammer && !PlayerSkillMatches) {
             RE::DebugNotification("I'm not strong enough to break this lock");
         } else if (!IsWeaponWarhammer) {
@@ -162,7 +160,7 @@ void BruteForce::UnlockWithBluntAndTwoHanded(RE::TESObjectREFR* refr, RE::TESObj
         }
     } else {
         if (IsWeaponWarhammer) {
-            UnlockObject(refr, true, weapon);
+            UnlockObject(refr, true);
         } else {
             RE::DebugNotification("Only a warhammer could break this lock");
         }
@@ -170,9 +168,9 @@ void BruteForce::UnlockWithBluntAndTwoHanded(RE::TESObjectREFR* refr, RE::TESObj
 }
 
 void BruteForce::UnlockBasedOnMaterial(RE::TESObjectREFR* refr, bool IsWeaponTwoHanded, bool IsUsingSkillRequirement,
-                                       bool PlayerSkillMatches, RE::TESObjectWEAP* weapon) {
+                                       bool PlayerSkillMatches) {
     if (IsUsingSkillRequirement && PlayerSkillMatches || !IsUsingSkillRequirement) {
-        UnlockObject(refr, IsWeaponTwoHanded, weapon);
+        UnlockObject(refr, IsWeaponTwoHanded);
     } else {
         RE::DebugNotification("I'm not strong enough to break this lock");
     }
@@ -203,51 +201,78 @@ void BruteForce::IncreaseSkillExperience(RE::ActorValue SkillToIncrease, RE::LOC
     }
 }
 
-float BruteForce::NormalizeFactor(float a_level, float a_min, float a_max) { return ((a_level - a_max) / (a_max - a_min)) + 1.0f; }
+//float BruteForce::NormalizeValue(float afValue, float afMin, float afMax) { return ((afValue - afMax) / (afMax - afMin)) + 1.0; }
+//
+//float BruteForce::GetSuccessChance(RE::TESObjectREFR* refr, RE::TESObjectWEAP* weapon, RE::ActorValue SkillUsed) {
+//    Settings* Settings = Settings::GetSingleton();
+//    RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
+//    float fLockDifficulty = 0.0f;
+//    double fWeaponForce = 0.0;
+//
+//    if (weapon->HasKeywordString("WeapMaterialSteel")) {
+//        fWeaponForce = Settings->GetForceMultiplier("fSteel");
+//    } else if (weapon->HasKeywordString("WeapMaterialImperial")) {
+//        fWeaponForce = Settings->GetForceMultiplier("fImperial");
+//    } else if (weapon->HasKeywordString("WeapMaterialSilver")) {
+//        fWeaponForce = Settings->GetForceMultiplier("fSilver");
+//    } else if (weapon->HasKeywordString("WeapMaterialDwarven")) {
+//        fWeaponForce = Settings->GetForceMultiplier("fDwarven");
+//    } else if (weapon->HasKeywordString("WeapMaterialElven")) {
+//        fWeaponForce = Settings->GetForceMultiplier("fElven");
+//    } else if (weapon->HasKeywordString("WeapMaterialOrcish")) {
+//        fWeaponForce = Settings->GetForceMultiplier("fOrcish");
+//    } else if (weapon->HasKeywordString("DLC2WeaponMaterialNordic")) {
+//        fWeaponForce = Settings->GetForceMultiplier("´fNordic");
+//    } else if (weapon->HasKeywordString("WeapMaterialEbony")) {
+//        fWeaponForce = Settings->GetForceMultiplier("fEbony");
+//    } else if (weapon->HasKeywordString("DLC2WeaponMaterialStalhrim")) {
+//        fWeaponForce = Settings->GetForceMultiplier("fStalhrim");
+//    } else if (weapon->HasKeywordString("WeapMaterialDaedric")) {
+//        fWeaponForce = Settings->GetForceMultiplier("fDaedric");
+//    } else if (weapon->HasKeywordString("DLC1WeapMaterialDragonbone")) {
+//        fWeaponForce = Settings->GetForceMultiplier("fDragonbone");
+//    } else {
+//        fWeaponForce = 0.0;
+//    }
+//       
+//    switch (refr->GetLockLevel()) { 
+//        case RE::LOCK_LEVEL::kVeryEasy:
+//            fLockDifficulty = 0.5f;
+//            break;
+//        case RE::LOCK_LEVEL::kEasy:
+//            fLockDifficulty = 1.0f;
+//            break;
+//        case RE::LOCK_LEVEL::kAverage:
+//            fLockDifficulty = 2.0f;
+//            break;
+//        case RE::LOCK_LEVEL::kHard:
+//            fLockDifficulty = 3.0f;
+//            break;
+//        case RE::LOCK_LEVEL::kVeryHard:
+//            fLockDifficulty = 4.0f;
+//            break;
+//        case RE::LOCK_LEVEL::kRequiresKey:
+//            fLockDifficulty = 5.0f;
+//            break;
+//        default:
+//            fLockDifficulty = -1.0f;
+//            break;
+//    }
+//    
+//    double fSkillReq = Settings->GetLockSkillReq(refr->GetLockLevel());
+//    float fPlayerNorm = NormalizeValue(player->GetLevel(), 1.0f, 81.0f);
+//    float fLuck = 1.0f + static_cast<float>(rand()) * static_cast<float>(3.0f - 1.0f) / RAND_MAX;
+//    float fWeaponSkill = player->GetActorBase()->GetActorValue(SkillUsed);
+//    float fBaseValue = player->GetActorBase()->GetBaseActorValue(SkillUsed);
+//    float fPlayerForce = fPlayerNorm * 0.45;
+//    float fForceValue = (fWeaponForce * 0.35f) + (fWeaponSkill * 0.2f) + fPlayerForce;
+//    float fSuccessFactor = (((fPlayerForce + fLuck) / 2) * 50 < rand() * 100);
+//    float fResult = (fLockDifficulty) - (fForceValue * fLuck * fPlayerForce);
+//
+//    float fLockHealth = (fLockDifficulty + (fSkillReq * 0.01)) - (fBaseValue * 0.1); // 5.85
+//    float fPlayerDmg = (fWeaponForce * 10) + (fWeaponSkill * 0.1) + fLuck;
+//    
+//    return 0.0f;
+//}
 
-float BruteForce::CalculateFactors(RE::TESObjectREFR* refr, RE::PlayerCharacter* Player, RE::TESObjectWEAP* weapon,
-                                   RE::ActorValue skill) {
-    Settings* Settings = Settings::GetSingleton();
-    float fWeaponForce = 0.0;
 
-    // TODO: Replace this if with something more performant
-    if (weapon->HasKeywordString("WeapMaterialSteel")) {
-        fWeaponForce = Settings->GetForceMultiplier("fSteel");
-    } else if (weapon->HasKeywordString("WeapMaterialImperial")) {
-        fWeaponForce = Settings->GetForceMultiplier("fImperial");
-    } else if (weapon->HasKeywordString("WeapMaterialSilver")) {
-        fWeaponForce = Settings->GetForceMultiplier("fSilver");
-    } else if (weapon->HasKeywordString("WeapMaterialDwarven")) {
-        fWeaponForce = Settings->GetForceMultiplier("fDwarven");
-    } else if (weapon->HasKeywordString("WeapMaterialElven")) {
-        fWeaponForce = Settings->GetForceMultiplier("fElven");
-    } else if (weapon->HasKeywordString("WeapMaterialOrcish")) {
-        fWeaponForce = Settings->GetForceMultiplier("fOrcish");
-    } else if (weapon->HasKeywordString("DLC2WeaponMaterialNordic")) {
-        fWeaponForce = Settings->GetForceMultiplier("´fNordic");
-    } else if (weapon->HasKeywordString("WeapMaterialEbony")) {
-        fWeaponForce = Settings->GetForceMultiplier("fEbony");
-    } else if (weapon->HasKeywordString("DLC2WeaponMaterialStalhrim")) {
-        fWeaponForce = Settings->GetForceMultiplier("fStalhrim");
-    } else if (weapon->HasKeywordString("WeapMaterialDaedric")) {
-        fWeaponForce = Settings->GetForceMultiplier("fDaedric");
-    } else if (weapon->HasKeywordString("DLC1WeapMaterialDragonbone")) {
-        fWeaponForce = Settings->GetForceMultiplier("fDragonbone");
-    } else {
-        fWeaponForce = 0.0;
-    }
-
-    // TODO: LockDiff needs to be converted to float
-    float LockDiff = static_cast<float>(refr->GetLockLevel()) / 100;
-    logger::info("Lock diff: {}", LockDiff);
-    float LuckFactor = 0.95f + static_cast<float>(rand()) * static_cast<float>(1.05f - 0.95f) / RAND_MAX;
-    // TODO: PlayerForce needs to be converted to float
-    float PlayerForce = NormalizeFactor(Player->GetLevel(), 1.0, 81.0);
-    logger::info("Player force: {}", PlayerForce);
-    float WeaponSkill = NormalizeFactor(Player->GetActorBase()->GetActorValue(skill), 15.0, 100.0);
-
-    float ForceFactor = (WeaponSkill * 0.35f) + (fWeaponForce * 0.2f) + (PlayerForce * 0.45f);
-
-    int SuccessFactor = static_cast<int>((((PlayerForce + LuckFactor) / 2) * 50 > rand() % 100 + 1));
-    return LockDiff - (ForceFactor * LuckFactor * SuccessFactor);
-}

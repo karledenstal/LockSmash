@@ -1,6 +1,6 @@
-# Brute Force - Lock Overhaul SKSE
+﻿# Brute Force - Lock Overhaul SKSE
 
-This is my first SKSE plugin. Other mods exists like this, but couldn't find one that did it in an SKSE plugin, so used it as a learning experience. Will probably work on this more to polish it, but for now I'm pretty stoked about it!
+This is my first SKSE plugin. Other mods exists like this, but couldn't find one that did it in an SKSE plugin, so used it as a learning experience. Will probably work on this more to polish it in the future.
 
 **What does it do different?**
 
@@ -13,15 +13,41 @@ There are other modpacks that add unlock spells, so I left those out of this one
 **Features:**
 
 - Break locks using brute force
-  - Stronger material breaks harder locks
-    - Novice locks: All weapons except wood
-    - Apprentice locks: Steel, Draugr, Silver, Falmer
-    - Adept locks: Falmer Honed, Dwarven, Elven, Draugr Honed
-    - Expert locks: Glass, Orcish & Ebony weapons
-    - Master locks: Stahlrim, Nordic, Daedric & Dragonbone.
+﻿Novice locks: Steel, Silver
+        Apprentice locks: Dwarven, Elven
+        Adept locks: Orcish, Nordic
+        Expert locks: Glass, Ebony, Stalhrim
+        Master locks: Daedric, Dragonbone
 
-**Future ideas:**
+**Optional Features:**
 
-- Melt locks using Alchemy
-- Auto lockpicking
-- Absolutely obliterate Requires key locks and break every quest.
+There is a BruteForce.ini file that you can configure to adjust the gamplay experience, such as:
+
+- Only allow blunt weapons to open locks
+- Only allow two handed weapons to open locks
+- Only allow warhammers to open locks
+- Enable/disable skill requirement
+- Configure skill increase
+- Configure required skill to bash open locks
+- Enabled/disable the mod.
+
+**Roadmap**
+
+**Version 2.0:**
+- MCM config (with help of MCM helper)
+- Better detection event
+- More immersive calculation of lock bash to not always guarantee success
+- "Simple" lock bash by using Activate event instead of Hit.
+- Option to disable lockpicking if skill doesn't meet requirement
+
+**Version 3.0**
+- Use alchemy to melt locks
+- Use shouts to break open locks.
+- Destruction magic can unlock chests.
+- Autopicking
+
+**Known "issues":**
+- Detection/Steal alarm seems to work a bit weird, and gives a really low bounty atm
+
+**Compatibility:**
+- Not compatible with mods that do similar things.

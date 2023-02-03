@@ -1,7 +1,5 @@
 #pragma once
 
-#include <random>
-
 class BruteForce : public RE::BSTEventSink<RE::TESHitEvent> {
     BruteForce() = default;
     BruteForce(const BruteForce&) = delete;

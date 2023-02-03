@@ -13,6 +13,7 @@ There are other modpacks that add unlock spells, so I left those out of this one
 **Features:**
 
 - Break locks using brute force
+
 ﻿	- Novice locks: Steel, Silver
 	- Apprentice locks: Dwarven, Elven
 	- Adept locks: Orcish, Nordic

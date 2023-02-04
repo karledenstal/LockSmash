@@ -18,7 +18,11 @@ class BruteBase : public RE::BSTEventSink<RE::TESHitEvent>, public BruteForce {
 
         void DisplaySealedByFate(RE::LOCK_LEVEL lockLevel);
         
-        void DisplayNoUnlock(BruteForce::Unlock::Flag flag);
+        void DisplayNoWeaponUnlock(BruteForce::Unlock::Flag flag);
+
+        void DisplayNoMagicUnlock(BruteMagic::Unlock::Flag flag);
 
         void UnlockWithWeapon(RE::TESObjectREFR* refr, RE::TESObjectWEAP* weapon);
+
+        void UnlockWithMagic(RE::TESObjectREFR* refr, RE::SpellItem* spell);
 };

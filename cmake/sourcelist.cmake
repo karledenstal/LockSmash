@@ -1,6 +1,6 @@
 set(sources ${sources}
 	src/Settings.cpp
-	src/BruteForce.cpp
-	src/BruteMagic.cpp
+	src/BruteBash/BruteForce.cpp
+	src/BruteMagic/BruteMagic.cpp
 	src/BruteBase.cpp
 )

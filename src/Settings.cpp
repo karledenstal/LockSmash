@@ -29,6 +29,8 @@ bool Settings::BruteForceBasic::isSkillRequirementEnabled() { return bEnableSkil
 
 bool Settings::Magic::isMagicEnabled() { return bEnableMagic; };
 bool Settings::Magic::allowShockToUnlock() { return bAllowShockToUnlock; };
+bool Settings::Magic::onlyFireAndForget() { return bOnlyFireAndForget; };
+bool Settings::Magic::isConcentratedDamageDebuffEnabled() { return bConcentratedDamageDebuff; };
 
 float Settings::SuccessChance::getMaxChance() { return fMaxChance; }
 float Settings::SuccessChance::getMinChance() { return fMinChance; }
@@ -47,6 +49,8 @@ void Settings::Magic::Load(CSimpleIniA& a_ini) {
 
     detail::config(a_ini, bEnableMagic, section, "bEnableMagic");
     detail::config(a_ini, bAllowShockToUnlock, section, "bAllowShockToUnlock");
+    detail::config(a_ini, bOnlyFireAndForget, section, "bOnlyFireAndForget");
+    detail::config(a_ini, bConcentratedDamageDebuff, section, "bConcentratedDamageDebuff");
 }
 
 void Settings::BruteForceBasic::Load(CSimpleIniA& a_ini) {

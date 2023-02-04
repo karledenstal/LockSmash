@@ -57,7 +57,7 @@ RE::BSEventNotifyControl BruteBase::ProcessEvent(const RE::TESHitEvent* event, R
                     if (flag == BruteForce::Unlock::Flag::kPasses) {
                         GetSingleton()->UnlockWithWeapon(event->target->As<RE::TESObjectREFR>(), attackSourceWeapon);
                     } else {
-                        GetSingleton()->DisplayNoUnlock(flag);
+                        GetSingleton()->DisplayNoWeaponUnlock(flag);
                     }
                     
                 } else {
@@ -72,6 +72,21 @@ RE::BSEventNotifyControl BruteBase::ProcessEvent(const RE::TESHitEvent* event, R
                 auto* attackSourceMagic = RE::TESForm::LookupByID<RE::SpellItem>(event->source);
                 if (attackSourceMagic) {
                     logger::info("Attacking with magic: {}", attackSourceMagic->GetName());
+
+                    if (BruteMagic::GetSingleton()->isAllowedMagic(attackSourceMagic)) {
+                        float skillRequirement = GetSingleton()->GetSkillRequirement(event->target->GetLockLevel());
+                        float playerSkill = RE::PlayerCharacter::GetSingleton()->GetActorBase()->GetActorValue(RE::ActorValue::kDestruction);
+                        
+                        BruteMagic::Unlock::Flag flag = BruteMagic::GetSingleton()->canUnlock(playerSkill >= skillRequirement, attackSourceMagic->GetCastingType());
+
+                        if (flag == BruteMagic::Unlock::Flag::kPasses) {
+                            GetSingleton()->UnlockWithMagic(event->target->As<RE::TESObjectREFR>(), attackSourceMagic);
+                        } else {
+                            GetSingleton()->DisplayNoMagicUnlock(flag);
+                        }
+                    } else {
+                        RE::DebugNotification("Only Destruction magic will work on this lock");
+                    }
                 }
                 return RE::BSEventNotifyControl::kContinue;
             }
@@ -100,7 +115,34 @@ void BruteBase::UnlockWithWeapon(RE::TESObjectREFR* refr, RE::TESObjectWEAP* wea
     GetSingleton()->CreateDetection(refr, player);
 }
 
-void BruteBase::DisplayNoUnlock(BruteForce::Unlock::Flag flag) {
+void BruteBase::UnlockWithMagic(RE::TESObjectREFR* refr, RE::SpellItem* spell) {
+    RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
+    auto fChanceOfSuccess = BruteMagic::GetSingleton()->GetSuccessChance(spell, GetSingleton()->GetSkillRequirement(refr->GetLockLevel()));
+    
+    if ((rand() % 100) < fChanceOfSuccess) {
+        GetSingleton()->UnlockTarget(refr, player);
+        BruteMagic::GetSingleton()->IncreaseMagicSkill(player, refr->GetLockLevel());
+    } else {
+        RE::DebugNotification("This lock is too difficult");
+    }
+
+    GetSingleton()->CreateDetection(refr, player);
+}
+
+void BruteBase::DisplayNoMagicUnlock(BruteMagic::Unlock::Flag flag) {
+    switch (flag) {
+        case BruteMagic::Unlock::Flag::kSkillFailed:
+            RE::DebugNotification("I'm not skilled enough to break this lock");
+            break;
+        case BruteMagic::Unlock::Flag::kWrongCastingType:
+            RE::DebugNotification("I need a different type of magic for this lock");
+            break;
+        default:
+            RE::DebugNotification("This lock won't budge");
+    }
+}
+
+void BruteBase::DisplayNoWeaponUnlock(BruteForce::Unlock::Flag flag) {
     switch (flag) { 
         case BruteForce::Unlock::Flag::kSkillFail :
             RE::DebugNotification("I'm not strong enough to break this lock");
@@ -110,7 +152,6 @@ void BruteBase::DisplayNoUnlock(BruteForce::Unlock::Flag flag) {
             break;
         default:
             RE::DebugNotification("This lock won't budge");
-            break;
     }
 }
 

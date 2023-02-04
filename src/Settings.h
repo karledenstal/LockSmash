@@ -31,9 +31,13 @@ class Settings {
 
             bool isMagicEnabled();
             bool allowShockToUnlock();
+            bool onlyFireAndForget();
+            bool isConcentratedDamageDebuffEnabled();
             
             bool bEnableMagic{true};
             bool bAllowShockToUnlock{false};
+            bool bOnlyFireAndForget{false};
+            bool bConcentratedDamageDebuff{true};
         } magic;
 
         struct SuccessChance {

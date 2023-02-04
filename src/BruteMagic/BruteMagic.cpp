@@ -12,9 +12,9 @@ bool BruteMagic::isAllowedMagic(RE::SpellItem* spell) {
                          Settings::GetSingleton()->magic.allowShockToUnlock() && spell->HasKeywordString("WeaponDamageShock");
 
     if (Settings::GetSingleton()->magic.onlyFireAndForget())
-        return allowedDamage && spell->GetCastingType() == RE::MagicSystem::CastingType::kFireAndForget;
+        return allowedDamage && spell->GetCastingType() == RE::MagicSystem::CastingType::kFireAndForget && spell->GetSpellType() == RE::MagicSystem::SpellType::kSpell;
     
-    return allowedDamage;
+    return allowedDamage && spell->GetSpellType() == RE::MagicSystem::SpellType::kSpell;
 }
 
 BruteMagic::Unlock::Flag BruteMagic::canUnlock(bool skillCheckPasses, RE::MagicSystem::CastingType castingType) {

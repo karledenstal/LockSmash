@@ -8,13 +8,31 @@ void BruteMagic::UnlockObject() {
 }
 
 bool BruteMagic::isAllowedMagic(RE::SpellItem* spell) {
-    bool allowedDamage = spell->HasKeywordString("WeaponDamageFire") || spell->HasKeywordString("WeaponDamageFrost") ||
-                         Settings::GetSingleton()->magic.allowShockToUnlock() && spell->HasKeywordString("WeaponDamageShock");
+    auto& effects = spell->effects;
+    bool hasAllowedEffect = false;
+    bool allowShock = Settings::GetSingleton()->magic.allowShockToUnlock();
+
+    for (auto& effect : effects) {
+        auto& effectData = effect->baseEffect;
+
+        logger::info("effect: {}", effectData->GetName());
+        
+        bool correctKeyword = effectData->HasKeywordString("WeaponDamageFire") ||
+                              effectData->HasKeywordString("WeaponDamageFrost") ||
+                              allowShock && effectData->HasKeywordString("WeaponDamageShock");
+
+        logger::info("effect has correct keyword: {}", correctKeyword);
+        
+        if (correctKeyword) hasAllowedEffect = true;
+        break;
+    }
+
+    logger::info("allowed {}", hasAllowedEffect);
 
     if (Settings::GetSingleton()->magic.onlyFireAndForget())
-        return allowedDamage && spell->GetCastingType() == RE::MagicSystem::CastingType::kFireAndForget && spell->GetSpellType() == RE::MagicSystem::SpellType::kSpell;
+        return hasAllowedEffect && spell->GetCastingType() == RE::MagicSystem::CastingType::kFireAndForget && spell->GetSpellType() == RE::MagicSystem::SpellType::kSpell;
     
-    return allowedDamage && spell->GetSpellType() == RE::MagicSystem::SpellType::kSpell;
+    return hasAllowedEffect && spell->GetSpellType() == RE::MagicSystem::SpellType::kSpell;
 }
 
 BruteMagic::Unlock::Flag BruteMagic::canUnlock(bool skillCheckPasses, RE::MagicSystem::CastingType castingType) {

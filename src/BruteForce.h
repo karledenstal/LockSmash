@@ -47,14 +47,11 @@ class BruteForce {
     public:
         void IncreaseSkillExperience(RE::ActorValue SkillToIncrease, RE::LOCK_LEVEL lockLevel,
                                      RE::PlayerCharacter* player);
-        float GetSuccessChance(RE::TESObjectWEAP* weapon, RE::ActorValue SkillUsed);
+        float GetSuccessChance(RE::TESObjectWEAP* weapon, RE::ActorValue SkillUsed, float fSkillReq);
         float GetWeaponMultiplier(RE::TESObjectWEAP* weapon);
-
-        bool isCorrectWeaponType(RE::TESObjectWEAP* weapon, Unlock::WeaponType weaponType);
-        
         Unlock::Flag canUnlockSpecialized(RE::TESObjectWEAP* weapon, bool skillCheckPasses,
-                                          Unlock::WeaponType weaponType);
+                                         Unlock::WeaponType weaponType);
         Unlock::Flag canUnlockBasic(bool skillCheckPasses);
-
         bool isCorrectMaterial(RE::TESObjectWEAP* weapon, std::string_view formList);
+        bool hasCorrectWeaponType(RE::TESObjectWEAP* weapon, Unlock::WeaponType weaponType);
 };

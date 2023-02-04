@@ -14,5 +14,5 @@ class BruteMagic {
 
      private:
         void UnlockObject();
-        float GetSuccessChance(RE::LOCK_LEVEL lockLevel, RE::SpellItem* spell);
+        float GetSuccessChance(RE::SpellItem* spell, float fSkillReq);
 };

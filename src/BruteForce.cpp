@@ -3,7 +3,7 @@ BruteForce* BruteForce::GetSingleton() {
     return &singleton;
 }
 
-bool BruteForce::isCorrectWeaponType(RE::TESObjectWEAP* weapon, BruteForce::Unlock::WeaponType weaponType) {
+bool BruteForce::hasCorrectWeaponType(RE::TESObjectWEAP* weapon, BruteForce::Unlock::WeaponType weaponType) {
     if (weaponType == Unlock::WeaponType::kBlunt) {
         return weapon->HasKeywordInList(RE::TESForm::LookupByEditorID<RE::BGSListForm>("_BF_BluntWeapons"), false);
     }
@@ -25,7 +25,7 @@ bool BruteForce::isCorrectMaterial(RE::TESObjectWEAP* weapon, std::string_view f
 
 BruteForce::Unlock::Flag BruteForce::canUnlockSpecialized(RE::TESObjectWEAP* weapon, bool skillCheckPasses,
                                                           Unlock::WeaponType weaponType) { 
-    bool isSpecializedWeapon = GetSingleton()->isCorrectWeaponType(weapon, weaponType);
+    bool isSpecializedWeapon = GetSingleton()->hasCorrectWeaponType(weapon, weaponType);
     
     if (!isSpecializedWeapon) return Unlock::Flag::kWrongWeaponType;
     if (isSpecializedWeapon && !Settings::GetSingleton()->bruteForceBasic.isSkillRequirementEnabled())
@@ -103,28 +103,22 @@ float BruteForce::GetWeaponMultiplier(RE::TESObjectWEAP* weapon) {
     }
 }
 
-float BruteForce::GetSuccessChance(RE::TESObjectWEAP* weapon, RE::ActorValue skillUsed) {
+float BruteForce::GetSuccessChance(RE::TESObjectWEAP* weapon, RE::ActorValue skillUsed, float fSkillReq) {
     Settings* Settings = Settings::GetSingleton();
     RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
     float fWeaponForce = GetWeaponMultiplier(weapon);
-    float fSkillReq = 25.0;
     float fWeaponSkill = player->GetActorBase()->GetActorValue(skillUsed);
     float fBaseValue = player->GetActorBase()->GetBaseActorValue(skillUsed);
     float fSkillCalc = fWeaponSkill - static_cast<float>(fSkillReq);
     float fStamina = player->GetActorBase()->GetBaseActorValue(RE::ActorValue::kStamina)/25;
     float fResult = fSkillCalc + fStamina + fBaseValue + static_cast<float>(fWeaponForce);
 
-    float fMaxChance = Settings->successChance.getMaxChance();
-    float fMinChance = Settings->successChance.getMinChance();
-
-    logger::info("maxChance: {}", fMaxChance);
-
     logger::info("fResult: {}", fResult);
 
     if (fResult < 0.0f) {
-        return fMinChance;
+        return Settings->successChance.getMaxChance();
     } else if (fResult > 100.0f) {
-        return fMaxChance;
+        return Settings->successChance.getMinChance();
     }
     
     return fResult;

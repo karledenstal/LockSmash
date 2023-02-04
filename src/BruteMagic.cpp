@@ -7,11 +7,10 @@ void BruteMagic::UnlockObject() {
     logger::info("Unlocking object");
 }
 
-float BruteMagic::GetSuccessChance(RE::LOCK_LEVEL lockLevel, RE::SpellItem* spell) { 
+float BruteMagic::GetSuccessChance(RE::SpellItem* spell, float fSkillReq) { 
     Settings* settings = Settings::GetSingleton();
     RE::TESNPC* player = RE::PlayerCharacter::GetSingleton()->GetActorBase();
     
-    float fSkillReq = 25.0;
     float fDestructionSkill = player->GetActorValue(RE::ActorValue::kDestruction);
     float fBaseValue = player->GetBaseActorValue(RE::ActorValue::kDestruction);
     float fMagicka = player->GetBaseActorValue(RE::ActorValue::kMagicka) / 25;

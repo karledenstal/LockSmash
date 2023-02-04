@@ -23,7 +23,7 @@ RE::BSEventNotifyControl BruteBase::ProcessEvent(const RE::TESHitEvent* event, R
                     bool allowOnlyBlunt = Settings::GetSingleton()->bruteForceBasic.onlyAllowBlunt();
                     bool allowOnlyTwoHanded = Settings::GetSingleton()->bruteForceBasic.onlyAllowTwoHanded();
 
-                    bool isWeaponTwoHanded = BruteForce::GetSingleton()->isCorrectWeaponType(
+                    bool isWeaponTwoHanded = BruteForce::GetSingleton()->hasCorrectWeaponType(
                         attackSourceWeapon, BruteForce::Unlock::WeaponType::kTwoHanded);
                     
                     float skillRequirement = GetSingleton()->GetSkillRequirement(event->target->GetLockLevel());
@@ -85,9 +85,10 @@ RE::BSEventNotifyControl BruteBase::ProcessEvent(const RE::TESHitEvent* event, R
 
 void BruteBase::UnlockWithWeapon(RE::TESObjectREFR* refr, RE::TESObjectWEAP* weapon) {
     RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
-    bool isTwoHanded = BruteForce::GetSingleton()->isCorrectWeaponType(weapon, BruteForce::Unlock::WeaponType::kTwoHanded);
+    bool isTwoHanded = BruteForce::GetSingleton()->hasCorrectWeaponType(weapon, BruteForce::Unlock::WeaponType::kTwoHanded);
     auto skillUsed = isTwoHanded ? RE::ActorValue::kTwoHanded : RE::ActorValue::kOneHanded;
-    auto fChanceOfSuccess = BruteForce::GetSingleton()->GetSuccessChance(weapon, skillUsed);
+    auto skillReq = GetSingleton()->GetSkillRequirement(refr->GetLockLevel());
+    auto fChanceOfSuccess = BruteForce::GetSingleton()->GetSuccessChance(weapon, skillUsed, skillReq);
     
     if ((rand() % 100) < fChanceOfSuccess) {
         GetSingleton()->UnlockTarget(refr, player);
@@ -162,6 +163,7 @@ void BruteBase::UnlockTarget(RE::TESObjectREFR* refr, RE::PlayerCharacter* playe
     if (refr && player) {
         refr->GetLock()->SetLocked(false);
         RE::PlaySound("NPCHumanWoodChopSD");
+        RE::DebugNotification("The lock is broken");
     } else {
         logger::info("Failed to instantiate player or refr");
     }

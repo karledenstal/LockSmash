@@ -1,6 +1,4 @@
 #include "Settings.h"
-#include "BruteForce.h"
-#include "BruteMagic.h"
 
 void SetupLog() {
     auto logsFolder = SKSE::log::log_directory();

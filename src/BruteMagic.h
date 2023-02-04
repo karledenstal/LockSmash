@@ -2,7 +2,7 @@
 
 #include "Settings.h"
 
-class BruteMagic : public RE::BSTEventSink<RE::TESHitEvent> {
+class BruteMagic : public RE::BSTEventSink<RE::TESHitEvent>, public BruteBase {
     public:
         BruteMagic() = default;
         BruteMagic(const BruteMagic&) = delete;
@@ -12,4 +12,8 @@ class BruteMagic : public RE::BSTEventSink<RE::TESHitEvent> {
         
         [[nodiscard]] static BruteMagic* GetSingleton();
         RE::BSEventNotifyControl ProcessEvent(const RE::TESHitEvent* event, RE::BSTEventSource<RE::TESHitEvent>*);
+
+     private:
+        void UnlockObject();
+        float GetSuccessChance();
 };

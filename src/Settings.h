@@ -79,6 +79,7 @@ class Settings {
             float fDragonbone{45.0f};
         } multipliers;
 
+        // thx PO3
         private:
             struct detail {
                 template <class T>

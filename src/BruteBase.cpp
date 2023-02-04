@@ -1,4 +1,3 @@
-#include "BruteBase.h"
 #include "Settings.h"
 
 BruteBase* BruteBase::GetSingleton() {

@@ -1,5 +1,3 @@
-#include "BruteForce.h"
-
 BruteForce* BruteForce::GetSingleton() {
     static BruteForce singleton;
     return &singleton;
@@ -65,16 +63,16 @@ void BruteForce::HitThatLock(RE::TESObjectREFR* refr, RE::TESObjectWEAP* weapon,
         float skillLevel = player->GetActorValue(IsTwoHanded ? RE::ActorValue::kTwoHanded : RE::ActorValue::kOneHanded);
 
         if (onlyTwoHanded && onlyBlunt) {
-            this->UnlockWithBluntAndTwoHanded(refr, weapon, skillLevel >= skillReq, IsSkillARequirement);
+            UnlockWithBluntAndTwoHanded(refr, weapon, skillLevel >= skillReq, IsSkillARequirement);
         } else if (onlyTwoHanded) {
-            this->UnlockWithTwoHandedOnly(refr, weapon, skillLevel >= skillReq, IsSkillARequirement);
+            UnlockWithTwoHandedOnly(refr, weapon, skillLevel >= skillReq, IsSkillARequirement);
         } else if (onlyBlunt) {
-            this->UnlockWithBluntOnly(refr, weapon, skillLevel >= skillReq, IsSkillARequirement, IsTwoHanded);
+            UnlockWithBluntOnly(refr, weapon, skillLevel >= skillReq, IsSkillARequirement, IsTwoHanded);
         } else if (weapon->GetWeaponType() == RE::WEAPON_TYPE::kBow ||
                    weapon->GetWeaponType() == RE::WEAPON_TYPE::kCrossbow) {
             RE::DebugNotification("I can't destroy this lock with a bow");
         } else {
-            this->UnlockBasedOnMaterial(refr, weapon, IsTwoHanded, IsSkillARequirement, skillLevel >= skillReq);
+            UnlockBasedOnMaterial(refr, weapon, IsTwoHanded, IsSkillARequirement, skillLevel >= skillReq);
         }
     } else {
         RE::DebugNotification("This lock is too sturdy for this weapon");

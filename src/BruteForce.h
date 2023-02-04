@@ -1,6 +1,5 @@
 #pragma once
 #include "Settings.h"
-#include "BruteBase.h"
 
 class BruteForce : public RE::BSTEventSink<RE::TESHitEvent>, public BruteBase {
     public:

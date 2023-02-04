@@ -1,5 +1,3 @@
-#include "BruteMagic.h"
-
 BruteMagic* BruteMagic::GetSingleton() {
     static BruteMagic singleton;
     return &singleton;
@@ -22,3 +20,9 @@ RE::BSEventNotifyControl BruteMagic::ProcessEvent(const RE::TESHitEvent* event, 
 
     return RE::BSEventNotifyControl::kContinue;
 };
+
+void BruteMagic::UnlockObject() {
+    logger::info("Unlocking object");
+}
+
+float BruteMagic::GetSuccessChance() { return 0.0f; }

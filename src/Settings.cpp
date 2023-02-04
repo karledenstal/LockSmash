@@ -5,17 +5,6 @@ Settings* Settings::GetSingleton() {
     return std::addressof(singleton);
 }
 
-void Settings::Load() {
-    constexpr auto path = L"Data/SKSE/Plugins/BruteForce.ini";
-
-    CSimpleIniA ini;
-    ini.SetUnicode();
-
-    ini.LoadFile(path);
-
-    ini.SaveFile(path);
-}
-
 bool Settings::IsBruteForceEnabled() {
     constexpr auto path = L"Data/SKSE/Plugins/BruteForce.ini";
 
@@ -25,10 +14,6 @@ bool Settings::IsBruteForceEnabled() {
     ini.LoadFile(path);
 
     bool IsEnabled = ini.GetBoolValue("BruteForceBasic", "bEnabled", true);
-
-    if (IsEnabled) {
-        Load();
-    }
 
     return IsEnabled;
 }
@@ -64,6 +49,28 @@ bool Settings::IsSkillRequirementEnabled() {
     ini.LoadFile(path);
 
     return ini.GetBoolValue("BruteForceBasic", "bEnableSkillRequirement", true);
+}
+
+bool Settings::IsMagicEnabled() {
+    constexpr auto path = L"Data/SKSE/Plugins/BruteForce.ini";
+
+    CSimpleIniA ini;
+    ini.SetUnicode();
+
+    ini.LoadFile(path);
+
+    return ini.GetBoolValue("Magic", "bEnableMagic", true);
+}
+
+bool Settings::AllowShockToUnlock() {
+    constexpr auto path = L"Data/SKSE/Plugins/BruteForce.ini";
+
+    CSimpleIniA ini;
+    ini.SetUnicode();
+
+    ini.LoadFile(path);
+
+    return ini.GetBoolValue("Magic", "bAllowShockToUnlock", false);
 }
 
 double Settings::GetLockSkillReq(RE::LOCK_LEVEL lockLevel) { 

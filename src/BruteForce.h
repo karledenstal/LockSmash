@@ -10,6 +10,7 @@ class BruteForce : public RE::BSTEventSink<RE::TESHitEvent> {
     public:
         [[nodiscard]] static BruteForce* GetSingleton();
         RE::BSEventNotifyControl ProcessEvent(const RE::TESHitEvent* event, RE::BSTEventSource<RE::TESHitEvent>*);
+        
         enum WEAP_MATERIAL {
             kIron,
             kSteel,

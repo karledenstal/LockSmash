@@ -1,6 +1,3 @@
-#include "BruteForce.h"
-#include "Settings.h"
-
 BruteForce* BruteForce::GetSingleton() {
     static BruteForce singleton;
     return &singleton;
@@ -8,19 +5,17 @@ BruteForce* BruteForce::GetSingleton() {
 
 RE::BSEventNotifyControl BruteForce::ProcessEvent(const RE::TESHitEvent* event, RE::BSTEventSource<RE::TESHitEvent>*) {
     RE::TESObjectWEAP* attackSourceWeapon = RE::TESForm::LookupByID<RE::TESObjectWEAP>(event->source);
+    RE::SpellItem* attackSourceMagic = RE::TESForm::LookupByID<RE::SpellItem>(event->source);
 
     if (attackSourceWeapon) {
-        if (attackSourceWeapon->GetWeaponType() == RE::WEAPON_TYPE::kBow ||
-            attackSourceWeapon->GetWeaponType() == RE::WEAPON_TYPE::kCrossbow) {
-            RE::DebugNotification("I can't destroy this lock with a bow");
-        } else if (event->target->IsLocked() && event->cause->GetFormID() == 0x14) {
-            RE::REFR_LOCK* targetLock = event->target->GetLock();
-            if (targetLock) {
-                logger::info("Target is locked");
-                std::string_view formListId = GetFormList(event->target);
-                HitThatLock(event->target->As<RE::TESObjectREFR>(), attackSourceWeapon, formListId);
+         if (event->target->IsLocked() && event->cause->GetFormID() == 0x14) {
+            logger::info("Target is locked");
+            std::string_view formListId = GetFormList(event->target);
+            
+            if (event->target->GetLockLevel() == RE::LOCK_LEVEL::kRequiresKey) {
+                RE::DebugNotification("This lock is sealed by Fate");
             } else {
-                logger::trace("Target has no lock");
+                HitThatLock(event->target->As<RE::TESObjectREFR>(), attackSourceWeapon, formListId);
             }
         } else {
             logger::trace("Target is not an object");
@@ -72,6 +67,9 @@ void BruteForce::HitThatLock(RE::TESObjectREFR* refr, RE::TESObjectWEAP* weapon,
             UnlockWithTwoHandedOnly(refr, weapon, skillLevel >= skillReq, IsSkillARequirement);
         } else if (onlyBlunt) {
             UnlockWithBluntOnly(refr, weapon, skillLevel >= skillReq, IsSkillARequirement, IsTwoHanded);
+        } else if (weapon->GetWeaponType() == RE::WEAPON_TYPE::kBow ||
+                   weapon->GetWeaponType() == RE::WEAPON_TYPE::kCrossbow) {
+            RE::DebugNotification("I can't destroy this lock with a bow");
         } else {
             UnlockBasedOnMaterial(refr, IsTwoHanded, IsSkillARequirement, skillLevel >= skillReq);
         }

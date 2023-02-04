@@ -1,5 +1,3 @@
-#include "src/Settings.h"
-
 void SetupLog() {
     auto logsFolder = SKSE::log::log_directory();
     if (!logsFolder) SKSE::stl::report_and_fail("SKSE log_directory not provided, logs disabled.");
@@ -27,12 +25,16 @@ SKSEPluginLoad(const SKSE::LoadInterface *skse) {
     SetupLog();
     
     SKSE::GetMessagingInterface()->RegisterListener(OnInit);
-
+    
     try {
         if (Settings::GetSingleton()->IsBruteForceEnabled()) {
             logger::info("BruteForce: Enabled");
             auto* eventSource = RE::ScriptEventSourceHolder::GetSingleton();
             eventSource->AddEventSink<RE::TESHitEvent>(BruteForce::GetSingleton());
+            
+            if (Settings::GetSingleton()->IsMagicEnabled()) {
+                eventSource->AddEventSink<RE::TESHitEvent>(BruteMagic::GetSingleton());
+            }
         } else {
             logger::info("BruteForce: Disabled");
         }

@@ -1,7 +1,7 @@
 #pragma once
 #include "Settings.h"
 
-class BruteForce : public RE::BSTEventSink<RE::TESHitEvent>, public BruteBase {
+class BruteForce {
     public:
         BruteForce() = default;
         BruteForce(const BruteForce&) = delete;
@@ -9,7 +9,6 @@ class BruteForce : public RE::BSTEventSink<RE::TESHitEvent>, public BruteBase {
         void operator=(const BruteForce&) = delete;
         void operator=(BruteForce&&) = delete;
         [[nodiscard]] static BruteForce* GetSingleton();
-        RE::BSEventNotifyControl ProcessEvent(const RE::TESHitEvent* event, RE::BSTEventSource<RE::TESHitEvent>*);
         
         enum WEAP_MATERIAL {
             kIron,
@@ -27,20 +26,35 @@ class BruteForce : public RE::BSTEventSink<RE::TESHitEvent>, public BruteBase {
             kDragonbone,
         };
 
-    private:
-        void UnlockObject(RE::TESObjectREFR* refr, RE::TESObjectWEAP* weapon, bool IsTwoHanded);
-        void HitThatLock(RE::TESObjectREFR* refr, RE::TESObjectWEAP* weapon, std::string_view formList);
-        void UnlockWithTwoHandedOnly(RE::TESObjectREFR* refr, RE::TESObjectWEAP* weapon, bool PlayerSkillMatches,
-                                     bool IsUsingSkillRequirement);
-        void UnlockWithBluntOnly(RE::TESObjectREFR* refr, RE::TESObjectWEAP* weapon, bool PlayerSkillMatches,
-                                 bool IsUsingSkillRequirement, bool IsWeaponTwoHanded);
-        void UnlockWithBluntAndTwoHanded(RE::TESObjectREFR* refr, RE::TESObjectWEAP* weapon, bool PlayerSkillMatches,
-                                         bool IsUsingSkillRequirement);
-        void UnlockBasedOnMaterial(RE::TESObjectREFR* refr, RE::TESObjectWEAP* weapon, bool IsWeaponTwoHanded,
-                                   bool IsUsingSkillRequirement,
-                                   bool PlayerSkillMatches);
+        struct Unlock {
+            enum class Flag {
+                kPasses,
+                kSkillFail,
+                kWrongWeaponType,
+                kFail,
+            };
+
+            enum class WeaponType {
+                kBlunt,
+                kTwoHanded,
+                kWarhammer,  // if both blunt & two handed is checked
+                kAll, 
+            };
+        };
+        
+       
+
+    public:
         void IncreaseSkillExperience(RE::ActorValue SkillToIncrease, RE::LOCK_LEVEL lockLevel,
                                      RE::PlayerCharacter* player);
-        float GetSuccessChance(RE::TESObjectREFR* refr, RE::TESObjectWEAP* weapon, RE::ActorValue SkillUsed);
+        float GetSuccessChance(RE::TESObjectWEAP* weapon, RE::ActorValue SkillUsed);
         float GetWeaponMultiplier(RE::TESObjectWEAP* weapon);
+
+        bool isCorrectWeaponType(RE::TESObjectWEAP* weapon, Unlock::WeaponType weaponType);
+        
+        Unlock::Flag canUnlockSpecialized(RE::TESObjectWEAP* weapon, bool skillCheckPasses,
+                                          Unlock::WeaponType weaponType);
+        Unlock::Flag canUnlockBasic(bool skillCheckPasses);
+
+        bool isCorrectMaterial(RE::TESObjectWEAP* weapon, std::string_view formList);
 };

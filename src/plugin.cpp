@@ -22,10 +22,10 @@ void OnInit(SKSE::MessagingInterface::Message* msg) {
                 if (Settings::GetSingleton()->bruteForceBasic.isEnabled()) {
                     logger::info("BruteForce: Enabled");
                     auto* eventSource = RE::ScriptEventSourceHolder::GetSingleton();
-                    eventSource->AddEventSink<RE::TESHitEvent>(BruteForce::GetSingleton());
-
+                    eventSource->AddEventSink<RE::TESHitEvent>(BruteBase::GetSingleton());
+                    
                     if (Settings::GetSingleton()->magic.isMagicEnabled()) {
-                        eventSource->AddEventSink<RE::TESHitEvent>(BruteMagic::GetSingleton());
+                        logger::info("BruteMagic: Enabled");
                     }
                 } else {
                     logger::info("BruteForce: Disabled");

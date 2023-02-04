@@ -5,6 +5,120 @@ BruteBase* BruteBase::GetSingleton() {
     return &singleton;
 }
 
+RE::BSEventNotifyControl BruteBase::ProcessEvent(const RE::TESHitEvent* event, RE::BSTEventSource<RE::TESHitEvent>*) {
+    if (event && event->target && event->source && event->cause) {
+        logger::info("BruteForce: All events initialized");
+
+        if (GetSingleton()->IsTargetLocked(event)) {
+            auto* attackSourceWeapon = RE::TESForm::LookupByID<RE::TESObjectWEAP>(event->source);
+            GetSingleton()->DisplaySealedByFate(event->target->GetLockLevel());
+
+            // if the player attacks with a weapon
+            if (attackSourceWeapon) {
+                logger::info("Attacking with weapon: {}", attackSourceWeapon->GetName());
+
+                auto formListId = GetSingleton()->GetFormList(event->target->GetLockLevel());
+                
+                if (BruteForce::GetSingleton()->isCorrectMaterial(attackSourceWeapon, formListId)) {
+                    bool allowOnlyBlunt = Settings::GetSingleton()->bruteForceBasic.onlyAllowBlunt();
+                    bool allowOnlyTwoHanded = Settings::GetSingleton()->bruteForceBasic.onlyAllowTwoHanded();
+
+                    bool isWeaponTwoHanded = BruteForce::GetSingleton()->isCorrectWeaponType(
+                        attackSourceWeapon, BruteForce::Unlock::WeaponType::kTwoHanded);
+                    
+                    float skillRequirement = GetSingleton()->GetSkillRequirement(event->target->GetLockLevel());
+                    float playerSkill =
+                        RE::PlayerCharacter::GetSingleton()->GetActorBase()->GetActorValue(isWeaponTwoHanded ? RE::ActorValue::kTwoHanded : RE::ActorValue::kOneHanded);
+
+                    BruteForce::Unlock::Flag flag;
+                    
+                    if (allowOnlyBlunt && allowOnlyTwoHanded) {
+                        // if only Warhammers can open locks
+                        flag = BruteForce::GetSingleton()->canUnlockSpecialized(
+                            attackSourceWeapon, playerSkill >= skillRequirement, 
+                            BruteForce::Unlock::WeaponType::kWarhammer);
+                    } else if (allowOnlyBlunt) {
+                        // if only blunt weapons can open locks
+                        flag = BruteForce::GetSingleton()->canUnlockSpecialized(
+                            attackSourceWeapon, playerSkill >= skillRequirement,
+                            BruteForce::Unlock::WeaponType::kBlunt);
+
+                    } else if (allowOnlyTwoHanded) {
+                        // if only two-handed weapons can open locks
+                        flag = BruteForce::GetSingleton()->canUnlockSpecialized(
+                            attackSourceWeapon, playerSkill >= skillRequirement,
+                            BruteForce::Unlock::WeaponType::kTwoHanded);
+
+                    } else {
+                        // if all weapons can open locks
+                        flag = BruteForce::GetSingleton()->canUnlockBasic(playerSkill >= skillRequirement);
+                    }
+
+                    if (flag == BruteForce::Unlock::Flag::kPasses) {
+                        GetSingleton()->UnlockWithWeapon(event->target->As<RE::TESObjectREFR>(), attackSourceWeapon);
+                    } else {
+                        GetSingleton()->DisplayNoUnlock(flag);
+                    }
+                    
+                } else {
+                    RE::DebugNotification("This lock is too sturdy for this weapon");
+                }
+
+                return RE::BSEventNotifyControl::kContinue;
+            }
+        
+            // if the player attacks with magic
+            if (Settings::GetSingleton()->magic.isMagicEnabled()) {
+                auto* attackSourceMagic = RE::TESForm::LookupByID<RE::SpellItem>(event->source);
+                if (attackSourceMagic) {
+                    logger::info("Attacking with magic: {}", attackSourceMagic->GetName());
+                }
+                return RE::BSEventNotifyControl::kContinue;
+            }
+        }
+        
+        return RE::BSEventNotifyControl::kContinue;
+    }
+
+    return RE::BSEventNotifyControl::kContinue;
+}
+
+void BruteBase::UnlockWithWeapon(RE::TESObjectREFR* refr, RE::TESObjectWEAP* weapon) {
+    RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
+    bool isTwoHanded = BruteForce::GetSingleton()->isCorrectWeaponType(weapon, BruteForce::Unlock::WeaponType::kTwoHanded);
+    auto skillUsed = isTwoHanded ? RE::ActorValue::kTwoHanded : RE::ActorValue::kOneHanded;
+    auto fChanceOfSuccess = BruteForce::GetSingleton()->GetSuccessChance(weapon, skillUsed);
+    
+    if ((rand() % 100) < fChanceOfSuccess) {
+        GetSingleton()->UnlockTarget(refr, player);
+        BruteForce::GetSingleton()->IncreaseSkillExperience(skillUsed, refr->GetLockLevel(), player);
+    } else {
+        RE::DebugNotification("This lock is too difficult");
+    }
+
+    GetSingleton()->CreateDetection(refr, player);
+}
+
+void BruteBase::DisplayNoUnlock(BruteForce::Unlock::Flag flag) {
+    switch (flag) { 
+        case BruteForce::Unlock::Flag::kSkillFail :
+            RE::DebugNotification("I'm not strong enough to break this lock");
+            break;
+        case BruteForce::Unlock::Flag::kWrongWeaponType:
+            RE::DebugNotification("I need a weapon of another type");
+            break;
+        default:
+            RE::DebugNotification("This lock won't budge");
+            break;
+    }
+}
+
+void BruteBase::DisplaySealedByFate(RE::LOCK_LEVEL lockLevel) {
+    if (lockLevel == RE::LOCK_LEVEL::kRequiresKey) {
+        RE::DebugNotification("This lock is sealed by Fate");
+    }
+}
+
 bool BruteBase::IsTargetLocked(const RE::TESHitEvent* event) {
     return event->target->IsLocked() && event->cause->GetFormID() == 0x14;
 }
@@ -42,7 +156,7 @@ std::string_view BruteBase::GetFormList(RE::LOCK_LEVEL lockLevel) {
     }
 }
 
-void BruteBase::UnlockedTarget(RE::TESObjectREFR* refr, RE::PlayerCharacter* player) { 
+void BruteBase::UnlockTarget(RE::TESObjectREFR* refr, RE::PlayerCharacter* player) { 
     logger::info("Unlocking object");
     
     if (refr && player) {

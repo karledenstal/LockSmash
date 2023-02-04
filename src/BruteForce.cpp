@@ -3,159 +3,49 @@ BruteForce* BruteForce::GetSingleton() {
     return &singleton;
 }
 
-RE::BSEventNotifyControl BruteForce::ProcessEvent(const RE::TESHitEvent* event, RE::BSTEventSource<RE::TESHitEvent>*) {
-    if (event && event->target && event->source && event->cause) {
-        logger::info("Events are all initialized");
-        RE::TESObjectWEAP* attackSourceWeapon = RE::TESForm::LookupByID<RE::TESObjectWEAP>(event->source);
-
-        if (attackSourceWeapon) {
-             if (BruteBase::GetSingleton()->IsTargetLocked(event)) {
-                logger::info("Target is locked");
-                 std::string_view formListId = BruteBase::GetSingleton()->GetFormList(event->target->GetLockLevel());
-            
-                if (event->target->GetLockLevel() == RE::LOCK_LEVEL::kRequiresKey) {
-                    RE::DebugNotification("This lock is sealed by Fate");
-                } else {
-                    HitThatLock(event->target->As<RE::TESObjectREFR>(), attackSourceWeapon, formListId);
-                    return RE::BSEventNotifyControl::kContinue;
-                }
-            } else {
-                logger::trace("Target is not locked");
-                return RE::BSEventNotifyControl::kStop;
-            }
-        } else {
-            logger::trace("Source is not a weapon");
-            return RE::BSEventNotifyControl::kStop;
-        }
-    }
-
-    return RE::BSEventNotifyControl::kStop;
-}
-
-void BruteForce::UnlockObject(RE::TESObjectREFR* refr, RE::TESObjectWEAP* weapon, bool IsTwoHanded) {
-    RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
-    auto skillUsed = IsTwoHanded ? RE::ActorValue::kTwoHanded : RE::ActorValue::kOneHanded;
-    auto fChanceOfSuccess = GetSuccessChance(refr, weapon, skillUsed);
-
-    if ((rand() % 100) < fChanceOfSuccess) {
-        BruteBase::GetSingleton()->UnlockedTarget(refr, player);
-        IncreaseSkillExperience(skillUsed, refr->GetLockLevel(), player);
-    } else {
-        RE::DebugNotification("This lock is too difficult");
+bool BruteForce::isCorrectWeaponType(RE::TESObjectWEAP* weapon, BruteForce::Unlock::WeaponType weaponType) {
+    if (weaponType == Unlock::WeaponType::kBlunt) {
+        return weapon->HasKeywordInList(RE::TESForm::LookupByEditorID<RE::BGSListForm>("_BF_BluntWeapons"), false);
     }
     
-    BruteBase::GetSingleton()->CreateDetection(refr, player);
-};
-
-void BruteForce::HitThatLock(RE::TESObjectREFR* refr, RE::TESObjectWEAP* weapon, std::string_view formList) {
-    if (weapon->HasKeywordInList(RE::TESForm::LookupByEditorID<RE::BGSListForm>(formList), false)) {
-        Settings::BruteForceBasic settings = Settings::GetSingleton()->bruteForceBasic;
-        bool onlyBlunt = settings.onlyAllowBlunt();
-        bool onlyTwoHanded = settings.onlyAllowTwoHanded();
-        bool IsSkillARequirement = settings.isSkillRequirementEnabled();
-
-        RE::LOCK_LEVEL lockLevel = refr->GetLockLevel();
-        RE::TESNPC* player = RE::PlayerCharacter::GetSingleton()->GetActorBase();
-
-        bool IsTwoHanded = weapon->HasKeywordInList(RE::TESForm::LookupByEditorID<RE::BGSListForm>("_BF_TwoHandedTypes"), false);
-
-        double skillReq = BruteBase::GetSingleton()->GetSkillRequirement(lockLevel);
-        float skillLevel = player->GetActorValue(IsTwoHanded ? RE::ActorValue::kTwoHanded : RE::ActorValue::kOneHanded);
-
-        if (onlyTwoHanded && onlyBlunt) {
-            UnlockWithBluntAndTwoHanded(refr, weapon, skillLevel >= skillReq, IsSkillARequirement);
-        } else if (onlyTwoHanded) {
-            UnlockWithTwoHandedOnly(refr, weapon, skillLevel >= skillReq, IsSkillARequirement);
-        } else if (onlyBlunt) {
-            UnlockWithBluntOnly(refr, weapon, skillLevel >= skillReq, IsSkillARequirement, IsTwoHanded);
-        } else if (weapon->GetWeaponType() == RE::WEAPON_TYPE::kBow ||
-                   weapon->GetWeaponType() == RE::WEAPON_TYPE::kCrossbow) {
-            RE::DebugNotification("I can't destroy this lock with a bow");
-        } else {
-            UnlockBasedOnMaterial(refr, weapon, IsTwoHanded, IsSkillARequirement, skillLevel >= skillReq);
-        }
-    } else {
-        RE::DebugNotification("This lock is too sturdy for this weapon");
+    if (weaponType == Unlock::WeaponType::kTwoHanded) {
+        return weapon->HasKeywordInList(RE::TESForm::LookupByEditorID<RE::BGSListForm>("_BF_TwoHandedTypes"), false);
     }
+
+    if (weaponType == Unlock::WeaponType::kWarhammer) {
+        return weapon->HasKeywordString("WeapTypeWarhammer");
+    }
+    
+    return false;
 }
 
-void BruteForce::UnlockWithTwoHandedOnly(RE::TESObjectREFR* refr, RE::TESObjectWEAP* weapon, bool PlayerSkillMatches,
-                                         bool IsUsingSkillRequirement) {
-    bool IsWeaponTwoHanded = weapon->HasKeywordInList(RE::TESForm::LookupByEditorID<RE::BGSListForm>("_BF_TwoHandedTypes"), false);
-
-    if (IsUsingSkillRequirement) {
-        if (IsWeaponTwoHanded && PlayerSkillMatches) {
-            UnlockObject(refr, weapon, true);
-        } else if (IsWeaponTwoHanded && !PlayerSkillMatches) {
-            RE::DebugNotification("I'm not strong enough to break this lock");
-        } else if (!IsWeaponTwoHanded) {
-            RE::DebugNotification("Only a two handed weapon could break this lock");
-        } else {
-            RE::DebugNotification("This lock won't budge");
-        }
-    } else {
-        if (IsWeaponTwoHanded) {
-            UnlockObject(refr, weapon, true);
-        } else {
-            RE::DebugNotification("Only a two handed weapon could break this lock");
-        }
-    }
+bool BruteForce::isCorrectMaterial(RE::TESObjectWEAP* weapon, std::string_view formList) {
+    return weapon->HasKeywordInList(RE::TESForm::LookupByEditorID<RE::BGSListForm>(formList), false);
 }
 
-void BruteForce::UnlockWithBluntOnly(RE::TESObjectREFR* refr, RE::TESObjectWEAP* weapon, bool PlayerSkillMatches,
-                                     bool IsUsingSkillRequirement, bool IsWeaponTwoHanded) {
-    bool IsBluntWeapon = weapon->HasKeywordInList(RE::TESForm::LookupByEditorID<RE::BGSListForm>("_BF_BluntWeapons"), false);
+BruteForce::Unlock::Flag BruteForce::canUnlockSpecialized(RE::TESObjectWEAP* weapon, bool skillCheckPasses,
+                                                          Unlock::WeaponType weaponType) { 
+    bool isSpecializedWeapon = GetSingleton()->isCorrectWeaponType(weapon, weaponType);
+    
+    if (!isSpecializedWeapon) return Unlock::Flag::kWrongWeaponType;
+    if (isSpecializedWeapon && !Settings::GetSingleton()->bruteForceBasic.isSkillRequirementEnabled())
+        return Unlock::Flag::kPasses;
 
-    if (IsUsingSkillRequirement) {
-        if (IsBluntWeapon && PlayerSkillMatches) {
-            UnlockObject(refr, weapon, IsWeaponTwoHanded);
-        } else if (IsBluntWeapon && !PlayerSkillMatches) {
-            RE::DebugNotification("I'm not strong enough to break this lock");
-        } else if (!IsBluntWeapon) {
-            RE::DebugNotification("Only a blunt weapon could break this lock");
-        } else {
-            RE::DebugNotification("This lock won't budge");
-        }
-    } else {
-        if (IsBluntWeapon) {
-            UnlockObject(refr, weapon, IsWeaponTwoHanded);
-        } else {
-            RE::DebugNotification("Only a blunt weapon could break this lock");
-        }
-    }
+    if (isSpecializedWeapon && skillCheckPasses)
+        return Unlock::Flag::kPasses;
+    else if (isSpecializedWeapon && !skillCheckPasses)
+        return Unlock::Flag::kSkillFail;
+    else
+        return Unlock::Flag::kFail;
 }
 
-void BruteForce::UnlockWithBluntAndTwoHanded(RE::TESObjectREFR* refr, RE::TESObjectWEAP* weapon,
-                                             bool PlayerSkillMatches,
-                                             bool IsUsingSkillRequirement) {
-    bool IsWeaponWarhammer = weapon->HasKeywordString("WeapTypeWarhammer");
-    if (IsUsingSkillRequirement) {
-        if (IsWeaponWarhammer && PlayerSkillMatches) {
-            UnlockObject(refr, weapon, true);
-        } else if (IsWeaponWarhammer && !PlayerSkillMatches) {
-            RE::DebugNotification("I'm not strong enough to break this lock");
-        } else if (!IsWeaponWarhammer) {
-            RE::DebugNotification("Only a warhammer could break this lock");
-        } else {
-            RE::DebugNotification("This lock won't budge");
-        }
-    } else {
-        if (IsWeaponWarhammer) {
-            UnlockObject(refr, weapon, true);
-        } else {
-            RE::DebugNotification("Only a warhammer could break this lock");
-        }
+BruteForce::Unlock::Flag BruteForce::canUnlockBasic(bool skillCheckPasses) {
+    bool skillRequirementEnabled = Settings::GetSingleton()->bruteForceBasic.isSkillRequirementEnabled();
+    if (skillRequirementEnabled && skillCheckPasses || !skillRequirementEnabled) {
+        return Unlock::Flag::kPasses;
     }
-}
-
-void BruteForce::UnlockBasedOnMaterial(RE::TESObjectREFR* refr, RE::TESObjectWEAP* weapon, bool IsWeaponTwoHanded,
-                                       bool IsUsingSkillRequirement,
-                                       bool PlayerSkillMatches) {
-    if (IsUsingSkillRequirement && PlayerSkillMatches || !IsUsingSkillRequirement) {
-        UnlockObject(refr, weapon, IsWeaponTwoHanded);
-    } else {
-        RE::DebugNotification("I'm not strong enough to break this lock");
-    }
+    
+    return Unlock::Flag::kSkillFail;
 }
 
 void BruteForce::IncreaseSkillExperience(RE::ActorValue SkillToIncrease, RE::LOCK_LEVEL lockLevel, RE::PlayerCharacter* Player) {
@@ -213,13 +103,13 @@ float BruteForce::GetWeaponMultiplier(RE::TESObjectWEAP* weapon) {
     }
 }
 
-float BruteForce::GetSuccessChance(RE::TESObjectREFR* refr, RE::TESObjectWEAP* weapon, RE::ActorValue SkillUsed) {
+float BruteForce::GetSuccessChance(RE::TESObjectWEAP* weapon, RE::ActorValue skillUsed) {
     Settings* Settings = Settings::GetSingleton();
     RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
     float fWeaponForce = GetWeaponMultiplier(weapon);
-    float fSkillReq = BruteBase::GetSingleton()->GetSkillRequirement(refr->GetLockLevel());
-    float fWeaponSkill = player->GetActorBase()->GetActorValue(SkillUsed);
-    float fBaseValue = player->GetActorBase()->GetBaseActorValue(SkillUsed);
+    float fSkillReq = 25.0;
+    float fWeaponSkill = player->GetActorBase()->GetActorValue(skillUsed);
+    float fBaseValue = player->GetActorBase()->GetBaseActorValue(skillUsed);
     float fSkillCalc = fWeaponSkill - static_cast<float>(fSkillReq);
     float fStamina = player->GetActorBase()->GetBaseActorValue(RE::ActorValue::kStamina)/25;
     float fResult = fSkillCalc + fStamina + fBaseValue + static_cast<float>(fWeaponForce);

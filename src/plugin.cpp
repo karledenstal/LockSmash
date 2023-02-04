@@ -1,3 +1,7 @@
+#include "Settings.h"
+#include "BruteForce.h"
+#include "BruteMagic.h"
+
 void SetupLog() {
     auto logsFolder = SKSE::log::log_directory();
     if (!logsFolder) SKSE::stl::report_and_fail("SKSE log_directory not provided, logs disabled.");
@@ -15,12 +19,14 @@ void OnInit(SKSE::MessagingInterface::Message* msg) {
         case SKSE::MessagingInterface::kDataLoaded:
             logger::info("BruteForce: Data loaded");
             try {
-                if (Settings::GetSingleton()->IsBruteForceEnabled()) {
+                Settings::GetSingleton()->LoadSettings();
+                
+                if (Settings::GetSingleton()->bruteForceBasic.isEnabled()) {
                     logger::info("BruteForce: Enabled");
                     auto* eventSource = RE::ScriptEventSourceHolder::GetSingleton();
                     eventSource->AddEventSink<RE::TESHitEvent>(BruteForce::GetSingleton());
 
-                    if (Settings::GetSingleton()->IsMagicEnabled()) {
+                    if (Settings::GetSingleton()->magic.isMagicEnabled()) {
                         eventSource->AddEventSink<RE::TESHitEvent>(BruteMagic::GetSingleton());
                     }
                 } else {

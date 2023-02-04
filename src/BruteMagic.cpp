@@ -1,3 +1,5 @@
+#include "BruteMagic.h"
+
 BruteMagic* BruteMagic::GetSingleton() {
     static BruteMagic singleton;
     return &singleton;
@@ -8,7 +10,7 @@ RE::BSEventNotifyControl BruteMagic::ProcessEvent(const RE::TESHitEvent* event, 
     
     if (attackSourceMagic) {
         if (event->target->IsLocked() && event->cause->GetFormID() == 0x14) {
-            bool allowsShock = Settings::GetSingleton()->AllowShockToUnlock();
+            bool allowsShock = Settings::GetSingleton()->magic.allowShockToUnlock();
             RE::MagicSystem::SpellType spellType = attackSourceMagic->GetSpellType();
             RE::ActorValue associatedSkill = attackSourceMagic->GetAssociatedSkill();
             bool allowedMagic = attackSourceMagic->HasKeywordString("MagicDamageFire") ||

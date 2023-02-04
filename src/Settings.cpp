@@ -5,128 +5,88 @@ Settings* Settings::GetSingleton() {
     return std::addressof(singleton);
 }
 
-bool Settings::IsBruteForceEnabled() {
+void Settings::LoadSettings() {
     constexpr auto path = L"Data/SKSE/Plugins/BruteForce.ini";
 
     CSimpleIniA ini;
     ini.SetUnicode();
 
     ini.LoadFile(path);
+    
+    bruteForceBasic.Load(ini);
+    magic.Load(ini);
+    successChance.Load(ini);
+    skills.Load(ini);
+    multipliers.Load(ini);
 
-    bool IsEnabled = ini.GetBoolValue("BruteForceBasic", "bEnabled", true);
-
-    return IsEnabled;
+    ini.SaveFile(path);
 }
 
-bool Settings::OnlyAllowBlunt() {
-    constexpr auto path = L"Data/SKSE/Plugins/BruteForce.ini";
+bool Settings::BruteForceBasic::isEnabled() { return bEnabled; };
+bool Settings::BruteForceBasic::onlyAllowBlunt() { return bOnlyBlunt; };
+bool Settings::BruteForceBasic::onlyAllowTwoHanded() { return bOnlyTwoHanded; };
+bool Settings::BruteForceBasic::isSkillRequirementEnabled() { return bEnableSkillRequirement; };
 
-    CSimpleIniA ini;
-    ini.SetUnicode();
+bool Settings::Magic::isMagicEnabled() { return bEnableMagic; };
+bool Settings::Magic::allowShockToUnlock() { return bAllowShockToUnlock; };
 
-    ini.LoadFile(path);
+float Settings::SuccessChance::getMaxChance() { return fMaxChance; }
+float Settings::SuccessChance::getMinChance() { return fMinChance; }
 
-    return ini.GetBoolValue("BruteForceBasic", "bOnlyBlunt", false);
+// Load & set all settings from ini file
+
+void Settings::SuccessChance::Load(CSimpleIniA& a_ini) { 
+    static const char* section = "SuccessChance";
+
+    detail::config(a_ini, fMaxChance, section, "fMaxChance");
+    detail::config(a_ini, fMinChance, section, "fMinChance");
 }
 
-bool Settings::OnlyAllowTwoHanded() {
-    constexpr auto path = L"Data/SKSE/Plugins/BruteForce.ini";
+void Settings::Magic::Load(CSimpleIniA& a_ini) {
+    static const char* section = "Magic";
 
-    CSimpleIniA ini;
-    ini.SetUnicode();
-
-    ini.LoadFile(path);
-
-    return ini.GetBoolValue("BruteForceBasic", "bOnlyTwoHanded", false);
+    detail::config(a_ini, bEnableMagic, section, "bEnableMagic");
+    detail::config(a_ini, bAllowShockToUnlock, section, "bAllowShockToUnlock");
 }
 
-bool Settings::IsSkillRequirementEnabled() {
-    constexpr auto path = L"Data/SKSE/Plugins/BruteForce.ini";
+void Settings::BruteForceBasic::Load(CSimpleIniA& a_ini) {
+    static const char* section = "BruteForceBasic";
 
-    CSimpleIniA ini;
-    ini.SetUnicode();
-
-    ini.LoadFile(path);
-
-    return ini.GetBoolValue("BruteForceBasic", "bEnableSkillRequirement", true);
+    detail::config(a_ini, bEnabled, section, "bEnabled");
+    detail::config(a_ini, bOnlyBlunt, section, "bOnlyBlunt");
+    detail::config(a_ini, bOnlyTwoHanded, section, "bOnlyTwoHanded");
+    detail::config(a_ini, bEnableSkillRequirement, section, "bEnableSkillRequirement");
 }
 
-bool Settings::IsMagicEnabled() {
-    constexpr auto path = L"Data/SKSE/Plugins/BruteForce.ini";
+void Settings::Multipliers::Load(CSimpleIniA& a_ini) {
+    static const char* section = "Multipliers";
 
-    CSimpleIniA ini;
-    ini.SetUnicode();
-
-    ini.LoadFile(path);
-
-    return ini.GetBoolValue("Magic", "bEnableMagic", true);
+    detail::config(a_ini, fIron, section, "fIron");
+    detail::config(a_ini, fSteel, section, "fSteel");
+    detail::config(a_ini, fSilver, section, "fSilver");
+    detail::config(a_ini, fImperial, section, "fImperial");
+    detail::config(a_ini, fElven, section, "fElven");
+    detail::config(a_ini, fDwarven, section, "fDwarven");
+    detail::config(a_ini, fOrcish, section, "fOrcish");
+    detail::config(a_ini, fNordic, section, "fNordic");
+    detail::config(a_ini, fEbony, section, "fEbony");
+    detail::config(a_ini, fStalhrim, section, "fStalhrim");
+    detail::config(a_ini, fGlass, section, "fGlass");
+    detail::config(a_ini, fDaedric, section, "fDaedric");
+    detail::config(a_ini, fDragonbone, section, "fDragonbone");
 }
 
-bool Settings::AllowShockToUnlock() {
-    constexpr auto path = L"Data/SKSE/Plugins/BruteForce.ini";
+void Settings::Skills::Load(CSimpleIniA& a_ini) {
+    static const char* section = "Skills";
 
-    CSimpleIniA ini;
-    ini.SetUnicode();
-
-    ini.LoadFile(path);
-
-    return ini.GetBoolValue("Magic", "bAllowShockToUnlock", false);
-}
-
-double Settings::GetLockSkillReq(RE::LOCK_LEVEL lockLevel) { 
-    constexpr auto path = L"Data/SKSE/Plugins/BruteForce.ini";
-
-    CSimpleIniA ini;
-    ini.SetUnicode();
-
-    ini.LoadFile(path);
-
-    switch (lockLevel) { 
-        case RE::LOCK_LEVEL::kRequiresKey:
-        case RE::LOCK_LEVEL::kUnlocked:
-            return 900.0;
-        case RE::LOCK_LEVEL::kEasy: {
-            auto easy = ini.GetDoubleValue("Skills", "fApprenticeSkill");
-            logger::info("Easy lock: {}", easy);
-            return easy;
-        }
-        case RE::LOCK_LEVEL::kAverage: {
-            logger::info("average lock");
-            return ini.GetDoubleValue("Skills", "fAdeptSkill");
-        }
-        case RE::LOCK_LEVEL::kHard: {
-            logger::info("hard lock");
-            return ini.GetDoubleValue("Skills", "fExpertSkill");
-        }
-        case RE::LOCK_LEVEL::kVeryHard: {
-            logger::info("very hard lock");
-            return ini.GetDoubleValue("Skills", "fMasterSkill");
-        }
-        default: {
-            logger::info("very Easy lock");
-            return ini.GetDoubleValue("Skills", "fNoviceSkill");
-        }
-    }
-}
-
-float Settings::GetSkillIncreaseAmount(const char* level) {
-    constexpr auto path = L"Data/SKSE/Plugins/BruteForce.ini";
-
-    CSimpleIniA ini;
-    ini.SetUnicode();
-
-    ini.LoadFile(path);
-
-    return static_cast<float>(ini.GetDoubleValue("Skills", level));
-}
-
-float Settings::GetForceMultiplier(const char* a_key) {
-    constexpr auto path = L"Data/SKSE/Plugins/BruteForce.ini";
-
-    CSimpleIniA ini;
-    ini.SetUnicode();
-
-    ini.LoadFile(path);
-
-    return static_cast<float>(ini.GetDoubleValue("Multipliers", a_key));
+    detail::config(a_ini, fNoviceSkill, section, "fNoviceSkill");
+    detail::config(a_ini, fNoviceSkillIncrease, section, "fNoviceSkillIncrease");
+    detail::config(a_ini, fApprenticeSkill, section, "fApprenticeSkill");
+    detail::config(a_ini, fApprenticeSkillIncrease, section, "fApprenticeSkillIncrease");
+    detail::config(a_ini, fAdeptSkill, section, "fAdeptSkill");
+    detail::config(a_ini, fAdeptSkillIncrease, section, "fAdeptSkillIncrease");
+    detail::config(a_ini, fExpertSkill, section, "fExpertSkill");
+    detail::config(a_ini, fExpertSkillIncrease, section, "fExpertSkillIncrease");
+    detail::config(a_ini, fMasterSkill, section, "fMasterSkill");
+    detail::config(a_ini, fMasterSkillIncrease, section, "fMasterSkillIncrease");
 }

@@ -4,24 +4,31 @@ BruteForce* BruteForce::GetSingleton() {
 }
 
 RE::BSEventNotifyControl BruteForce::ProcessEvent(const RE::TESHitEvent* event, RE::BSTEventSource<RE::TESHitEvent>*) {
-    RE::TESObjectWEAP* attackSourceWeapon = RE::TESForm::LookupByID<RE::TESObjectWEAP>(event->source);
-    RE::SpellItem* attackSourceMagic = RE::TESForm::LookupByID<RE::SpellItem>(event->source);
+    if (event && event->target && event->source && event->cause) {
+        RE::TESObjectWEAP* attackSourceWeapon = RE::TESForm::LookupByID<RE::TESObjectWEAP>(event->source);
 
-    if (attackSourceWeapon) {
-         if (event->target->IsLocked() && event->cause->GetFormID() == 0x14) {
-            logger::info("Target is locked");
-            std::string_view formListId = GetFormList(event->target);
+        if (attackSourceWeapon) {
+             if (event->target->IsLocked() && event->cause->GetFormID() == 0x14) {
+                logger::info("Target is locked");
+                std::string_view formListId = GetFormList(event->target);
             
-            if (event->target->GetLockLevel() == RE::LOCK_LEVEL::kRequiresKey) {
-                RE::DebugNotification("This lock is sealed by Fate");
+                if (event->target->GetLockLevel() == RE::LOCK_LEVEL::kRequiresKey) {
+                    RE::DebugNotification("This lock is sealed by Fate");
+                } else {
+                    HitThatLock(event->target->As<RE::TESObjectREFR>(), attackSourceWeapon, formListId);
+                    return RE::BSEventNotifyControl::kContinue;
+                }
             } else {
-                HitThatLock(event->target->As<RE::TESObjectREFR>(), attackSourceWeapon, formListId);
+                logger::trace("Target is not an object");
+                return RE::BSEventNotifyControl::kStop;
             }
         } else {
-            logger::trace("Target is not an object");
+            logger::trace("Source is not a weapon");
+            return RE::BSEventNotifyControl::kStop;
         }
     }
-    return RE::BSEventNotifyControl::kContinue;
+
+    return RE::BSEventNotifyControl::kStop;
 }
 
 void BruteForce::UnlockObject(RE::TESObjectREFR* refr, bool IsTwoHanded) {

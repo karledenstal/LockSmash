@@ -14,6 +14,21 @@ void OnInit(SKSE::MessagingInterface::Message* msg) {
     switch (msg->type) {
         case SKSE::MessagingInterface::kDataLoaded:
             logger::info("BruteForce: Data loaded");
+            try {
+                if (Settings::GetSingleton()->IsBruteForceEnabled()) {
+                    logger::info("BruteForce: Enabled");
+                    auto* eventSource = RE::ScriptEventSourceHolder::GetSingleton();
+                    eventSource->AddEventSink<RE::TESHitEvent>(BruteForce::GetSingleton());
+
+                    if (Settings::GetSingleton()->IsMagicEnabled()) {
+                        eventSource->AddEventSink<RE::TESHitEvent>(BruteMagic::GetSingleton());
+                    }
+                } else {
+                    logger::info("BruteForce: Disabled");
+                }
+            } catch (...) {
+                logger::error("Exception caught when loading settings! Default settings will be used");
+            };
             break;
     }
 }
@@ -25,22 +40,6 @@ SKSEPluginLoad(const SKSE::LoadInterface *skse) {
     SetupLog();
     
     SKSE::GetMessagingInterface()->RegisterListener(OnInit);
-    
-    try {
-        if (Settings::GetSingleton()->IsBruteForceEnabled()) {
-            logger::info("BruteForce: Enabled");
-            auto* eventSource = RE::ScriptEventSourceHolder::GetSingleton();
-            eventSource->AddEventSink<RE::TESHitEvent>(BruteForce::GetSingleton());
-            
-            if (Settings::GetSingleton()->IsMagicEnabled()) {
-                eventSource->AddEventSink<RE::TESHitEvent>(BruteMagic::GetSingleton());
-            }
-        } else {
-            logger::info("BruteForce: Disabled");
-        }
-    } catch (...) {
-        logger::error("Exception caught when loading settings! Default settings will be used");
-    };
 
     return true;
 }

@@ -97,15 +97,19 @@ class Settings {
                     if constexpr (std::is_same_v<bool, T>) {
                         a_value = a_ini.GetBoolValue(a_section, a_key, a_value);
                         a_ini.SetBoolValue(a_section, a_key, a_value);
+                        logger::info("Setting: {} with {} in section {}", a_key, a_value, a_section);
                     } else if constexpr (std::is_floating_point_v<T>) {
                         a_value = static_cast<T>(a_ini.GetDoubleValue(a_section, a_key, a_value));
                         a_ini.SetDoubleValue(a_section, a_key, a_value);
+                        logger::info("Setting: {} with {} in section {}", a_key, std::to_string(a_value).c_str(), a_section);
                     } else if constexpr (std::is_arithmetic_v<T> || std::is_enum_v<T>) {
                         a_value = std::string::lexical_cast<T>(a_ini.GetValue(a_section, a_key, std::to_string(a_value).c_str()));
                         a_ini.SetValue(a_section, a_key, std::to_string(a_value).c_str());
+                        logger::info("Setting: {} with {} in section {}", a_key, std::to_string(a_value).c_str(), a_section);
                     } else {
                         a_value = a_ini.GetValue(a_section, a_key, a_value.c_str());
                         a_ini.SetValue(a_section, a_key, a_value.c_str());
+                        logger::info("Setting: {} with {} in section {}", a_key, a_value, a_section);
                     }
                 }
             };

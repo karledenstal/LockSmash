@@ -1,7 +1,7 @@
 #pragma once
 
 namespace Papyrus {
-    class SmashOpen_MCM {
+    class SOSBF_MCM {
     public:
         static void OnConfigClose(RE::TESQuest*);
         

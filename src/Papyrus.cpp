@@ -3,20 +3,20 @@
 #include "Settings.h"
 
 namespace Papyrus {
-    void SmashOpen_MCM::OnConfigClose(RE::TESQuest*) { 
+    void SOSBF_MCM::OnConfigClose(RE::TESQuest*) { 
         Settings::GetSingleton()->LoadSettings(); 
     }
 
-    bool SmashOpen_MCM::Register(RE::BSScript::IVirtualMachine* a_vm) {
-        a_vm->RegisterFunction("OnConfigClose", "SmashOpen_MCM", OnConfigClose);
+    bool SOSBF_MCM::Register(RE::BSScript::IVirtualMachine* a_vm) {
+        a_vm->RegisterFunction("OnConfigClose", "SOSBF_MCM", OnConfigClose);
 
-        logger::info("Registered SmashOpen_MCM");
+        logger::info("Registered SOSBF_MCM");
         return true;
     }
 
     void Register() {
         auto papyrus = SKSE::GetPapyrusInterface();
-        papyrus->Register(SmashOpen_MCM::Register);
+        papyrus->Register(SOSBF_MCM::Register);
         logger::info("Registered papyrus functions");
     }
 }

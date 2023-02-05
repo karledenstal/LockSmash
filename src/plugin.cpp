@@ -51,10 +51,9 @@ SKSEPluginLoad(const SKSE::LoadInterface *skse) {
     if (!messaging->RegisterListener("SKSE", OnInit)) {
         return false;
     }
-
-    Papyrus::Register();
     
     messaging->RegisterListener(OnInit);
+    Papyrus::Register();
 
     return true;
 }

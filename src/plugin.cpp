@@ -26,6 +26,8 @@ void OnInit(SKSE::MessagingInterface::Message* msg) {
                     
                     if (Settings::GetSingleton()->magic.isMagicEnabled()) {
                         logger::info("BruteMagic: Enabled");
+                    } else {
+                        logger::info("BruteMagic: Disabled");
                     }
                 } else {
                     logger::info("BruteForce: Disabled");

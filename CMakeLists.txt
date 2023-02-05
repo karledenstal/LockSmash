@@ -64,7 +64,6 @@ if(DEFINED OUTPUT_FOLDER)
         PRIVATE 
             ${CMAKE_CURRENT_SOURCE_DIR}/include
             ${CMAKE_CURRENT_SOURCE_DIR}/src
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/BruteMagic
             ${SIMPLEINI_INCLUDE_DIRS}
     )
 

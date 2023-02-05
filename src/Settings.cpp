@@ -31,6 +31,8 @@ bool Settings::Magic::isMagicEnabled() { return bEnableMagic; };
 bool Settings::Magic::allowShockToUnlock() { return bAllowShockToUnlock; };
 bool Settings::Magic::onlyFireAndForget() { return bOnlyFireAndForget; };
 bool Settings::Magic::isConcentratedDamageDebuffEnabled() { return bConcentratedDamageDebuff; };
+float Settings::Magic::getFrostLockBuff() { return fFrostedLockBuff; }
+float Settings::Magic::getConcentratedDebuff() { return fConcentratedDamageDebuff; }
 
 float Settings::SuccessChance::getMaxChance() { return fMaxChance; }
 float Settings::SuccessChance::getMinChance() { return fMinChance; }
@@ -51,6 +53,9 @@ void Settings::Magic::Load(CSimpleIniA& a_ini) {
     detail::config(a_ini, bAllowShockToUnlock, section, "bAllowShockToUnlock");
     detail::config(a_ini, bOnlyFireAndForget, section, "bOnlyFireAndForget");
     detail::config(a_ini, bConcentratedDamageDebuff, section, "bConcentratedDamageDebuff");
+
+    detail::config(a_ini, fConcentratedDamageDebuff, section, "fConcentratedDamageDebuff");
+    detail::config(a_ini, fFrostedLockBuff, section, "fFrostedLockBuff");
 }
 
 void Settings::BruteForceBasic::Load(CSimpleIniA& a_ini) {

@@ -21,9 +21,9 @@ class BruteMagic {
             };
         };
 
-        void UnlockObject();
+        bool getIsAllowedType(RE::MagicSystem::SpellType a_type);
         float GetSuccessChance(RE::SpellItem* spell, float fSkillReq);
         bool isAllowedMagic(RE::SpellItem* spell);
-        void IncreaseMagicSkill(RE::PlayerCharacter* player, RE::LOCK_LEVEL lockLevel);
+        void IncreaseMagicSkill(RE::ActorValue skillUsed, RE::PlayerCharacter* player, RE::LOCK_LEVEL lockLevel);
         Unlock::Flag canUnlock(bool skillCheckPasses, RE::MagicSystem::CastingType castingType);
 };

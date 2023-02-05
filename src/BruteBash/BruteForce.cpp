@@ -103,7 +103,7 @@ float BruteForce::GetWeaponMultiplier(RE::TESObjectWEAP* weapon) {
     }
 }
 
-float BruteForce::GetSuccessChance(RE::TESObjectWEAP* weapon, RE::ActorValue skillUsed, float fSkillReq) {
+float BruteForce::GetSuccessChance(RE::TESObjectWEAP* weapon, RE::ActorValue skillUsed, float fSkillReq, bool lockIsFrosted) {
     Settings* Settings = Settings::GetSingleton();
     RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
     float fWeaponForce = GetWeaponMultiplier(weapon);
@@ -111,7 +111,8 @@ float BruteForce::GetSuccessChance(RE::TESObjectWEAP* weapon, RE::ActorValue ski
     float fBaseValue = player->GetActorBase()->GetBaseActorValue(skillUsed);
     float fSkillCalc = fWeaponSkill - static_cast<float>(fSkillReq);
     float fStamina = player->GetActorBase()->GetBaseActorValue(RE::ActorValue::kStamina)/25;
-    float fResult = fSkillCalc + fStamina + fBaseValue + static_cast<float>(fWeaponForce);
+    float fFrostLockDebuff = lockIsFrosted ? Settings->magic.getFrostLockBuff() : 0.0f;
+    float fResult = fSkillCalc + fStamina + fBaseValue + static_cast<float>(fWeaponForce) + fFrostLockDebuff;
 
     logger::info("fResult: {}", fResult);
 

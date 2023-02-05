@@ -47,7 +47,7 @@ class BruteForce {
     public:
         void IncreaseSkillExperience(RE::ActorValue SkillToIncrease, RE::LOCK_LEVEL lockLevel,
                                      RE::PlayerCharacter* player);
-        float GetSuccessChance(RE::TESObjectWEAP* weapon, RE::ActorValue SkillUsed, float fSkillReq);
+        float GetSuccessChance(RE::TESObjectWEAP* weapon, RE::ActorValue SkillUsed, float fSkillReq, bool lockIsFrosted);
         float GetWeaponMultiplier(RE::TESObjectWEAP* weapon);
         Unlock::Flag canUnlockSpecialized(RE::TESObjectWEAP* weapon, bool skillCheckPasses,
                                          Unlock::WeaponType weaponType);

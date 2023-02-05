@@ -8,8 +8,16 @@ class BruteBase : public RE::BSTEventSink<RE::TESHitEvent>, public BruteForce {
     
     [[nodiscard]] static BruteBase* GetSingleton();
     RE::BSEventNotifyControl ProcessEvent(const RE::TESHitEvent* event, RE::BSTEventSource<RE::TESHitEvent>*);
+
+    struct LockProps {
+        void setHasBeenFrosted(bool is_frosted);
+        bool getHasBeenFrosted();
+
+        bool hasBeenFrosted;
+    } lockProps;
     
     private:
+        
         void UnlockTarget(RE::TESObjectREFR* refr, RE::PlayerCharacter* player);
         bool IsTargetLocked(const RE::TESHitEvent* event);
         std::string_view GetFormList(RE::LOCK_LEVEL lockLevel);

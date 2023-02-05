@@ -85,7 +85,7 @@ RE::BSEventNotifyControl BruteBase::ProcessEvent(const RE::TESHitEvent* event, R
                             GetSingleton()->DisplayNoMagicUnlock(flag);
                         }
                     } else {
-                        RE::DebugNotification("Only Destruction magic will work on this lock");
+                        RE::DebugNotification("This magic isn't sufficient");
                     }
                 }
                 return RE::BSEventNotifyControl::kContinue;
@@ -98,14 +98,17 @@ RE::BSEventNotifyControl BruteBase::ProcessEvent(const RE::TESHitEvent* event, R
     return RE::BSEventNotifyControl::kContinue;
 }
 
+void BruteBase::LockProps::setHasBeenFrosted(bool value) { BruteBase::LockProps::hasBeenFrosted = value; }
+bool BruteBase::LockProps::getHasBeenFrosted() { return BruteBase::LockProps::hasBeenFrosted; }
+
 void BruteBase::UnlockWithWeapon(RE::TESObjectREFR* refr, RE::TESObjectWEAP* weapon) {
     RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
     bool isTwoHanded = BruteForce::GetSingleton()->hasCorrectWeaponType(weapon, BruteForce::Unlock::WeaponType::kTwoHanded);
     auto skillUsed = isTwoHanded ? RE::ActorValue::kTwoHanded : RE::ActorValue::kOneHanded;
     auto skillReq = GetSingleton()->GetSkillRequirement(refr->GetLockLevel());
-    auto fChanceOfSuccess = BruteForce::GetSingleton()->GetSuccessChance(weapon, skillUsed, skillReq);
+    auto fChanceOfSuccess = BruteForce::GetSingleton()->GetSuccessChance(weapon, skillUsed, skillReq, GetSingleton()->lockProps.getHasBeenFrosted());
     
-    if ((rand() % 100) < fChanceOfSuccess) {
+    if ((rand() % 100) < fChanceOfSuccess || !Settings::GetSingleton()->bruteForceBasic.isSkillRequirementEnabled()) {
         GetSingleton()->UnlockTarget(refr, player);
         BruteForce::GetSingleton()->IncreaseSkillExperience(skillUsed, refr->GetLockLevel(), player);
     } else {
@@ -118,10 +121,10 @@ void BruteBase::UnlockWithWeapon(RE::TESObjectREFR* refr, RE::TESObjectWEAP* wea
 void BruteBase::UnlockWithMagic(RE::TESObjectREFR* refr, RE::SpellItem* spell) {
     RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
     auto fChanceOfSuccess = BruteMagic::GetSingleton()->GetSuccessChance(spell, GetSingleton()->GetSkillRequirement(refr->GetLockLevel()));
-    
-    if ((rand() % 100) < fChanceOfSuccess) {
+        
+    if ((rand() % 100) < fChanceOfSuccess || !Settings::GetSingleton()->bruteForceBasic.isSkillRequirementEnabled()) {
         GetSingleton()->UnlockTarget(refr, player);
-        BruteMagic::GetSingleton()->IncreaseMagicSkill(player, refr->GetLockLevel());
+        BruteMagic::GetSingleton()->IncreaseMagicSkill(spell->GetAssociatedSkill(), player, refr->GetLockLevel());
     } else {
         RE::DebugNotification("This lock is too difficult");
     }
@@ -205,6 +208,7 @@ void BruteBase::UnlockTarget(RE::TESObjectREFR* refr, RE::PlayerCharacter* playe
         refr->GetLock()->SetLocked(false);
         RE::PlaySound("NPCHumanWoodChopSD");
         RE::DebugNotification("The lock is broken");
+        GetSingleton()->lockProps.setHasBeenFrosted(false);
     } else {
         logger::info("Failed to instantiate player or refr");
     }

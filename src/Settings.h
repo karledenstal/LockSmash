@@ -34,10 +34,16 @@ class Settings {
             bool onlyFireAndForget();
             bool isConcentratedDamageDebuffEnabled();
             
+            float getFrostLockBuff();
+            float getConcentratedDebuff();
+            
             bool bEnableMagic{true};
             bool bAllowShockToUnlock{false};
             bool bOnlyFireAndForget{false};
             bool bConcentratedDamageDebuff{true};
+            
+            float fConcentratedDamageDebuff{10.0f};
+            float fFrostedLockBuff{8.0f};
         } magic;
 
         struct SuccessChance {

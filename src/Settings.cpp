@@ -6,14 +6,14 @@ Settings* Settings::GetSingleton() {
 }
 
 void Settings::LoadSettings() {
-    constexpr auto path = L"Data/SKSE/Plugins/BruteForce.ini";
+    constexpr auto path = L"Data/SKSE/Plugins/SmashOpenSKSE.ini";
 
     CSimpleIniA ini;
     ini.SetUnicode();
 
     ini.LoadFile(path);
     
-    bruteForceBasic.Load(ini);
+    basic.Load(ini);
     magic.Load(ini);
     successChance.Load(ini);
     skills.Load(ini);
@@ -22,10 +22,10 @@ void Settings::LoadSettings() {
     ini.SaveFile(path);
 }
 
-bool Settings::BruteForceBasic::isEnabled() { return bEnabled; };
-bool Settings::BruteForceBasic::onlyAllowBlunt() { return bOnlyBlunt; };
-bool Settings::BruteForceBasic::onlyAllowTwoHanded() { return bOnlyTwoHanded; };
-bool Settings::BruteForceBasic::isSkillRequirementEnabled() { return bEnableSkillRequirement; };
+bool Settings::Basic::isEnabled() { return bEnabled; };
+bool Settings::Basic::onlyAllowBlunt() { return bOnlyBlunt; };
+bool Settings::Basic::onlyAllowTwoHanded() { return bOnlyTwoHanded; };
+bool Settings::Basic::isSkillRequirementEnabled() { return bEnableSkillRequirement; };
 
 bool Settings::Magic::isMagicEnabled() { return bEnableMagic; };
 bool Settings::Magic::allowShockToUnlock() { return bAllowShockToUnlock; };
@@ -58,8 +58,8 @@ void Settings::Magic::Load(CSimpleIniA& a_ini) {
     detail::config(a_ini, fFrostedLockBuff, section, "fFrostedLockBuff");
 }
 
-void Settings::BruteForceBasic::Load(CSimpleIniA& a_ini) {
-    static const char* section = "BruteForceBasic";
+void Settings::Basic::Load(CSimpleIniA& a_ini) {
+    static const char* section = "Basic";
 
     detail::config(a_ini, bEnabled, section, "bEnabled");
     detail::config(a_ini, bOnlyBlunt, section, "bOnlyBlunt");

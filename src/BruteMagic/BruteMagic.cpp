@@ -43,7 +43,7 @@ bool BruteMagic::isAllowedMagic(RE::SpellItem* spell) {
 }
 
 BruteMagic::Unlock::Flag BruteMagic::canUnlock(bool skillCheckPasses, RE::MagicSystem::CastingType castingType) {
-    bool skillRequirementEnabled = Settings::GetSingleton()->bruteForceBasic.isSkillRequirementEnabled();
+    bool skillRequirementEnabled = Settings::GetSingleton()->basic.isSkillRequirementEnabled();
     bool allowOnlyFF = Settings::GetSingleton()->magic.onlyFireAndForget();
     
     // user only allows Fire and Forget spells && the spel they cast is NOT fire and forget

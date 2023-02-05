@@ -20,8 +20,8 @@ RE::BSEventNotifyControl BruteBase::ProcessEvent(const RE::TESHitEvent* event, R
                 auto formListId = GetSingleton()->GetFormList(event->target->GetLockLevel());
                 
                 if (BruteForce::GetSingleton()->isCorrectMaterial(attackSourceWeapon, formListId)) {
-                    bool allowOnlyBlunt = Settings::GetSingleton()->bruteForceBasic.onlyAllowBlunt();
-                    bool allowOnlyTwoHanded = Settings::GetSingleton()->bruteForceBasic.onlyAllowTwoHanded();
+                    bool allowOnlyBlunt = Settings::GetSingleton()->basic.onlyAllowBlunt();
+                    bool allowOnlyTwoHanded = Settings::GetSingleton()->basic.onlyAllowTwoHanded();
 
                     bool isWeaponTwoHanded = BruteForce::GetSingleton()->hasCorrectWeaponType(
                         attackSourceWeapon, BruteForce::Unlock::WeaponType::kTwoHanded);
@@ -106,7 +106,7 @@ void BruteBase::UnlockWithWeapon(RE::TESObjectREFR* refr, RE::TESObjectWEAP* wea
 
     auto fChanceOfSuccess = BruteForce::GetSingleton()->GetSuccessChance(weapon, skillUsed, skillReq, BruteMagic::GetSingleton()->lockMagicProps.getLockIsFrosted());
     
-    if ((rand() % 100) < fChanceOfSuccess || !Settings::GetSingleton()->bruteForceBasic.isSkillRequirementEnabled()) {
+    if ((rand() % 100) < fChanceOfSuccess || !Settings::GetSingleton()->basic.isSkillRequirementEnabled()) {
         GetSingleton()->UnlockTarget(refr, player);
         BruteForce::GetSingleton()->IncreaseSkillExperience(skillUsed, refr->GetLockLevel(), player);
     } else {
@@ -120,7 +120,7 @@ void BruteBase::UnlockWithMagic(RE::TESObjectREFR* refr, RE::SpellItem* spell) {
     RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
     auto fChanceOfSuccess = BruteMagic::GetSingleton()->GetSuccessChance(spell, GetSingleton()->GetSkillRequirement(refr->GetLockLevel()));
         
-    if ((rand() % 100) < fChanceOfSuccess || !Settings::GetSingleton()->bruteForceBasic.isSkillRequirementEnabled()) {
+    if ((rand() % 100) < fChanceOfSuccess || !Settings::GetSingleton()->basic.isSkillRequirementEnabled()) {
         GetSingleton()->UnlockTarget(refr, player);
         BruteMagic::GetSingleton()->IncreaseMagicSkill(spell->GetAssociatedSkill(), player, refr->GetLockLevel());
     } else {

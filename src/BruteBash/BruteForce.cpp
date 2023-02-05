@@ -28,7 +28,7 @@ BruteForce::Unlock::Flag BruteForce::canUnlockSpecialized(RE::TESObjectWEAP* wea
     bool isSpecializedWeapon = GetSingleton()->hasCorrectWeaponType(weapon, weaponType);
     
     if (!isSpecializedWeapon) return Unlock::Flag::kWrongWeaponType;
-    if (isSpecializedWeapon && !Settings::GetSingleton()->bruteForceBasic.isSkillRequirementEnabled())
+    if (isSpecializedWeapon && !Settings::GetSingleton()->basic.isSkillRequirementEnabled())
         return Unlock::Flag::kPasses;
 
     if (isSpecializedWeapon && skillCheckPasses)
@@ -40,7 +40,7 @@ BruteForce::Unlock::Flag BruteForce::canUnlockSpecialized(RE::TESObjectWEAP* wea
 }
 
 BruteForce::Unlock::Flag BruteForce::canUnlockBasic(bool skillCheckPasses) {
-    bool skillRequirementEnabled = Settings::GetSingleton()->bruteForceBasic.isSkillRequirementEnabled();
+    bool skillRequirementEnabled = Settings::GetSingleton()->basic.isSkillRequirementEnabled();
     if (skillRequirementEnabled && skillCheckPasses || !skillRequirementEnabled) {
         return Unlock::Flag::kPasses;
     }

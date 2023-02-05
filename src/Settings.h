@@ -12,7 +12,7 @@ class Settings {
 
         void LoadSettings();
     
-        struct BruteForceBasic {  
+        struct Basic {  
             void Load(CSimpleIniA& a_ini);
 
             bool isEnabled();
@@ -24,7 +24,7 @@ class Settings {
             bool bOnlyBlunt{false};
             bool bOnlyTwoHanded{false};
             bool bEnableSkillRequirement{true};
-        } bruteForceBasic;
+        } basic;
 
         struct Magic {
             void Load(CSimpleIniA& a_ini);

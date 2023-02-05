@@ -2,7 +2,7 @@
 # If you use CMake features from higher versions, update this to match.
 cmake_minimum_required(VERSION 3.21)
 
-set(NAME BruteForceLockOverhaulSKSE CACHE STRING "")
+set(NAME SmashOpenSKSE CACHE STRING "")
 
 # Set your project name. This will be the name of your SKSE .dll file.
 project(${NAME} VERSION 0.0.1 LANGUAGES CXX)

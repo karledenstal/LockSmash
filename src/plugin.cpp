@@ -19,7 +19,7 @@ void OnInit(SKSE::MessagingInterface::Message* msg) {
             try {
                 Settings::GetSingleton()->LoadSettings();
                 
-                if (Settings::GetSingleton()->bruteForceBasic.isEnabled()) {
+                if (Settings::GetSingleton()->basic.isEnabled()) {
                     logger::info("BruteForce: Enabled");
                     auto* eventSource = RE::ScriptEventSourceHolder::GetSingleton();
                     eventSource->AddEventSink<RE::TESHitEvent>(BruteBase::GetSingleton());

@@ -21,6 +21,13 @@ class BruteMagic {
             };
         };
 
+        struct LockMagicProps {
+            bool lockIsFrosted{false};
+
+            void setLockIsFrosted(bool a_bool);
+            bool getLockIsFrosted();
+        } lockMagicProps;
+
         bool getIsAllowedType(RE::MagicSystem::SpellType a_type);
         float GetSuccessChance(RE::SpellItem* spell, float fSkillReq);
         bool isAllowedMagic(RE::SpellItem* spell);

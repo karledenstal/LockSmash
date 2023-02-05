@@ -6,15 +6,8 @@ class BruteBase : public RE::BSTEventSink<RE::TESHitEvent>, public BruteForce {
         void operator=(const BruteBase&) = delete;
         void operator=(BruteBase&&) = delete;
     
-    [[nodiscard]] static BruteBase* GetSingleton();
-    RE::BSEventNotifyControl ProcessEvent(const RE::TESHitEvent* event, RE::BSTEventSource<RE::TESHitEvent>*);
-
-    struct LockProps {
-        void setHasBeenFrosted(bool is_frosted);
-        bool getHasBeenFrosted();
-
-        bool hasBeenFrosted;
-    } lockProps;
+        [[nodiscard]] static BruteBase* GetSingleton();
+        RE::BSEventNotifyControl ProcessEvent(const RE::TESHitEvent* event, RE::BSTEventSource<RE::TESHitEvent>*);
     
     private:
         

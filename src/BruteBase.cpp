@@ -98,15 +98,13 @@ RE::BSEventNotifyControl BruteBase::ProcessEvent(const RE::TESHitEvent* event, R
     return RE::BSEventNotifyControl::kContinue;
 }
 
-void BruteBase::LockProps::setHasBeenFrosted(bool value) { BruteBase::LockProps::hasBeenFrosted = value; }
-bool BruteBase::LockProps::getHasBeenFrosted() { return BruteBase::LockProps::hasBeenFrosted; }
-
 void BruteBase::UnlockWithWeapon(RE::TESObjectREFR* refr, RE::TESObjectWEAP* weapon) {
     RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
     bool isTwoHanded = BruteForce::GetSingleton()->hasCorrectWeaponType(weapon, BruteForce::Unlock::WeaponType::kTwoHanded);
     auto skillUsed = isTwoHanded ? RE::ActorValue::kTwoHanded : RE::ActorValue::kOneHanded;
     auto skillReq = GetSingleton()->GetSkillRequirement(refr->GetLockLevel());
-    auto fChanceOfSuccess = BruteForce::GetSingleton()->GetSuccessChance(weapon, skillUsed, skillReq, GetSingleton()->lockProps.getHasBeenFrosted());
+
+    auto fChanceOfSuccess = BruteForce::GetSingleton()->GetSuccessChance(weapon, skillUsed, skillReq, BruteMagic::GetSingleton()->lockMagicProps.getLockIsFrosted());
     
     if ((rand() % 100) < fChanceOfSuccess || !Settings::GetSingleton()->bruteForceBasic.isSkillRequirementEnabled()) {
         GetSingleton()->UnlockTarget(refr, player);
@@ -208,7 +206,6 @@ void BruteBase::UnlockTarget(RE::TESObjectREFR* refr, RE::PlayerCharacter* playe
         refr->GetLock()->SetLocked(false);
         RE::PlaySound("NPCHumanWoodChopSD");
         RE::DebugNotification("The lock is broken");
-        GetSingleton()->lockProps.setHasBeenFrosted(false);
     } else {
         logger::info("Failed to instantiate player or refr");
     }

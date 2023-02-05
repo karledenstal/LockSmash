@@ -8,6 +8,9 @@ bool BruteMagic::getIsAllowedType(RE::MagicSystem::SpellType a_type) {
            a_type == RE::MagicSystem::SpellType::kLeveledSpell || a_type == RE::MagicSystem::SpellType::kVoicePower;
 }
 
+bool BruteMagic::LockMagicProps::getLockIsFrosted() { return LockMagicProps::lockIsFrosted; }
+void BruteMagic::LockMagicProps::setLockIsFrosted(bool a_bool) { LockMagicProps::lockIsFrosted = a_bool; }
+
 bool BruteMagic::isAllowedMagic(RE::SpellItem* spell) {
     auto& effects = spell->effects;
     bool hasAllowedEffect = false;
@@ -24,9 +27,10 @@ bool BruteMagic::isAllowedMagic(RE::SpellItem* spell) {
         } else {
             correctKeyword = isInList;
         }
-        
+
         if (effectData->HasKeyword("MagicDamageFrost")) {
-            BruteBase::GetSingleton()->lockProps.setHasBeenFrosted(true);
+            auto inst = GetSingleton();
+            inst->lockMagicProps.setLockIsFrosted(true);
         }
 
         if (correctKeyword) {

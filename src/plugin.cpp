@@ -1,4 +1,5 @@
 #include "Settings.h"
+#include "Papyrus.h"
 
 void SetupLog() {
     auto logsFolder = SKSE::log::log_directory();
@@ -45,7 +46,15 @@ SKSEPluginLoad(const SKSE::LoadInterface *skse) {
     // Setup logging (e.g. using spdlog)
     SetupLog();
     
-    SKSE::GetMessagingInterface()->RegisterListener(OnInit);
+    auto messaging = SKSE::GetMessagingInterface();
+    
+    if (!messaging->RegisterListener("SKSE", OnInit)) {
+        return false;
+    }
+
+    Papyrus::Register();
+    
+    messaging->RegisterListener(OnInit);
 
     return true;
 }

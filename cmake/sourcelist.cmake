@@ -3,4 +3,5 @@ set(sources ${sources}
 	src/BruteBash/BruteForce.cpp
 	src/BruteMagic/BruteMagic.cpp
 	src/BruteBase.cpp
+	src/Papyrus.cpp
 )

@@ -6,20 +6,27 @@ Settings* Settings::GetSingleton() {
 }
 
 void Settings::LoadSettings() {
-    constexpr auto path = L"Data/SKSE/Plugins/SmashOpenSKSE.ini";
+    constexpr auto defaultPath = L"Data/MCM/Config/SmashOpenSKSE/settings.ini";
+    constexpr auto mcmPath = L"Data/MCM/Settings/SmashOpenSKSE.ini";
 
-    CSimpleIniA ini;
-    ini.SetUnicode();
+    const auto readMCM = [&](std::filesystem::path path) {
+        CSimpleIniA ini;
+        ini.SetUnicode();
 
-    ini.LoadFile(path);
-    
-    basic.Load(ini);
-    magic.Load(ini);
-    successChance.Load(ini);
-    skills.Load(ini);
-    multipliers.Load(ini);
+        ini.LoadFile(defaultPath);
+        ini.LoadFile(mcmPath);
 
-    ini.SaveFile(path);
+        basic.Load(ini);
+        magic.Load(ini);
+        successChance.Load(ini);
+        skills.Load(ini);
+        multipliers.Load(ini);
+    };
+
+    readMCM(defaultPath);
+    readMCM(mcmPath);
+
+    logger::info("Settings loaded");
 }
 
 bool Settings::Basic::isEnabled() { return bEnabled; };

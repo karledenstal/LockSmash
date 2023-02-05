@@ -11,26 +11,19 @@ bool BruteMagic::isAllowedMagic(RE::SpellItem* spell) {
     auto& effects = spell->effects;
     bool hasAllowedEffect = false;
     bool allowShock = Settings::GetSingleton()->magic.allowShockToUnlock();
-
+    
     for (auto& effect : effects) {
         auto& effectData = effect->baseEffect;
-
-        logger::info("effect: {}", effectData->GetName());
         
-        bool correctKeyword = effectData->HasKeywordString("WeaponDamageFire") ||
-                              effectData->HasKeywordString("WeaponDamageFrost") ||
-                              allowShock && effectData->HasKeywordString("WeaponDamageShock");
-
-        logger::info("effect has correct keyword: {}", correctKeyword);
+        bool correctKeyword = effectData->HasKeyword("MagicDamageFire") ||
+                              effectData->HasKeyword("MagicDamageFrost") ||
+                              allowShock && effectData->HasKeyword("MagicDamageShock");
         
-        if (correctKeyword) hasAllowedEffect = true;
-        break;
+        if (correctKeyword) {
+            hasAllowedEffect = true;
+            break;
+        }
     }
-
-    logger::info("allowed {}", hasAllowedEffect);
-
-    if (Settings::GetSingleton()->magic.onlyFireAndForget())
-        return hasAllowedEffect && spell->GetCastingType() == RE::MagicSystem::CastingType::kFireAndForget && spell->GetSpellType() == RE::MagicSystem::SpellType::kSpell;
     
     return hasAllowedEffect && spell->GetSpellType() == RE::MagicSystem::SpellType::kSpell;
 }
@@ -80,7 +73,7 @@ float BruteMagic::GetSuccessChance(RE::SpellItem* spell, float fSkillReq) {
     RE::TESNPC* player = RE::PlayerCharacter::GetSingleton()->GetActorBase();
     
     bool concentrateSpellDebuff = settings->magic.isConcentratedDamageDebuffEnabled();
-    float fConcentratedDebuff = concentrateSpellDebuff ? 15.0f : 0.0f;
+    float fConcentratedDebuff = concentrateSpellDebuff && spell->GetCastingType() == RE::MagicSystem::CastingType::kConcentration ? 10.0f : 0.0f;
     float fDestructionSkill = player->GetActorValue(RE::ActorValue::kDestruction);
     float fAlterationSkill = player->GetActorValue(RE::ActorValue::kAlteration);
     float fRestorationSkill = player->GetActorValue(RE::ActorValue::kRestoration);

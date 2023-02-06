@@ -20,7 +20,7 @@ bool BruteForce::hasCorrectWeaponType(RE::TESObjectWEAP* weapon, BruteForce::Unl
 }
 
 bool BruteForce::isCorrectMaterial(RE::TESObjectWEAP* weapon, std::string_view formList) {
-    return weapon->HasKeywordInList(RE::TESForm::LookupByEditorID<RE::BGSListForm>(formList), false);
+    return weapon->HasKeywordInList(RE::TESForm::LookupByEditorID<RE::BGSListForm>(formList), false) || weapon->IsBound();
 }
 
 BruteForce::Unlock::Flag BruteForce::canUnlockSpecialized(RE::TESObjectWEAP* weapon, bool skillCheckPasses,
@@ -110,10 +110,13 @@ float BruteForce::GetSuccessChance(RE::TESObjectWEAP* weapon, RE::ActorValue ski
     float fWeaponSkill = player->GetActorBase()->GetActorValue(skillUsed);
     float fBaseValue = player->GetActorBase()->GetBaseActorValue(skillUsed);
     float fSkillCalc = fWeaponSkill - static_cast<float>(fSkillReq);
-    float fStamina = player->GetActorBase()->GetBaseActorValue(RE::ActorValue::kStamina)/25;
+    float fStamina = player->GetActorBase()->GetActorValue(RE::ActorValue::kStamina) / 50;
+    float fMagicka = player->GetActorBase()->GetActorValue(RE::ActorValue::kMagicka) / 50;
+    float useAttribute = weapon->IsBound() ? fStamina + fMagicka : fStamina;
+    
     float fFrostLockDebuff = lockIsFrosted ? Settings->magic.getFrostLockBuff() : 0.0f;
-    float fResult = fSkillCalc + fStamina + fBaseValue + static_cast<float>(fWeaponForce) + fFrostLockDebuff;
-
+    float fResult = fSkillCalc + useAttribute + fBaseValue + static_cast<float>(fWeaponForce) + fFrostLockDebuff;
+    
     logger::info("fResult: {}", fResult);
 
     if (fResult < 0.0f) {

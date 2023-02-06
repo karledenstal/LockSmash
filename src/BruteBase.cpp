@@ -7,7 +7,8 @@ BruteBase* BruteBase::GetSingleton() {
 }
 
 RE::BSEventNotifyControl BruteBase::ProcessEvent(const RE::TESHitEvent* event, RE::BSTEventSource<RE::TESHitEvent>*) {
-    if (event && event->target && event->source && event->cause) {
+    if (event && event->target && event->source && event->cause && Settings::GetSingleton()->basic.isEnabled()) {
+        logger::info("Smash Open SKSE: Enabled");
         logger::info("BruteForce: All events initialized");
 
         if (GetSingleton()->IsTargetLocked(event)) {
@@ -70,6 +71,7 @@ RE::BSEventNotifyControl BruteBase::ProcessEvent(const RE::TESHitEvent* event, R
         
             // if the player attacks with magic
             if (Settings::GetSingleton()->magic.isMagicEnabled()) {
+                logger::info("Smash Open SKSE Magic: Enabled");
                 auto* attackSourceMagic = RE::TESForm::LookupByID<RE::SpellItem>(event->source);
                 if (attackSourceMagic) {
                     logger::info("Attacking with magic: {}", attackSourceMagic->GetName());
@@ -220,7 +222,7 @@ void BruteBase::CreateDetection(RE::TESObjectREFR* refr, RE::PlayerCharacter* pl
         logger::info("This is not owned by the player!!");
     } else if (refr->GetActorOwner() != player->GetActorBase() && !IsAContainer) {
         logger::info("This is not a container");
-        player->TrespassAlarm(refr, refr->GetActorOwner(), 1000);
+        player->TrespassAlarm(refr, refr->GetActorOwner(), 1000);        
     } else {
         logger::info("This is owned by the player");
     }

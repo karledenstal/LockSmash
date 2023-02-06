@@ -20,20 +20,8 @@ void OnInit(SKSE::MessagingInterface::Message* msg) {
             logger::info("BruteForce: Data loaded");
             try {
                 Settings::GetSingleton()->LoadSettings();
-                
-                if (Settings::GetSingleton()->basic.isEnabled()) {
-                    logger::info("BruteForce: Enabled");
-                    auto* eventSource = RE::ScriptEventSourceHolder::GetSingleton();
-                    eventSource->AddEventSink<RE::TESHitEvent>(BruteBase::GetSingleton());
-                    
-                    if (Settings::GetSingleton()->magic.isMagicEnabled()) {
-                        logger::info("BruteMagic: Enabled");
-                    } else {
-                        logger::info("BruteMagic: Disabled");
-                    }
-                } else {
-                    logger::info("BruteForce: Disabled");
-                }
+                auto* eventSource = RE::ScriptEventSourceHolder::GetSingleton();
+                eventSource->AddEventSink<RE::TESHitEvent>(BruteBase::GetSingleton());
             } catch (...) {
                 logger::error("Exception caught when loading settings! Default settings will be used");
             };

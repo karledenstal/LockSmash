@@ -60,7 +60,6 @@ void Settings::Magic::Load(CSimpleIniA& a_ini) {
     detail::config(a_ini, bAllowShockToUnlock, section, "bAllowShockToUnlock");
     detail::config(a_ini, bOnlyFireAndForget, section, "bOnlyFireAndForget");
     detail::config(a_ini, bConcentratedDamageDebuff, section, "bConcentratedDamageDebuff");
-
     detail::config(a_ini, fConcentratedDamageDebuff, section, "fConcentratedDamageDebuff");
     detail::config(a_ini, fFrostedLockBuff, section, "fFrostedLockBuff");
 }

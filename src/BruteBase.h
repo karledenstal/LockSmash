@@ -1,3 +1,6 @@
+#include "../src/BruteBash/BruteForce.h"
+#include "../src/BruteMagic/BruteMagic.h"
+
 class BruteBase : public RE::BSTEventSink<RE::TESHitEvent>, public BruteForce {
 	public:
         BruteBase() = default;

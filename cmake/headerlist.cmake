@@ -4,5 +4,6 @@ set(headers ${headers}
 	src/BruteMagic/BruteMagic.h
 	src/BruteBase.h
 	src/Papyrus.h
+	src/Detection.h
 	include/logger.h
 )

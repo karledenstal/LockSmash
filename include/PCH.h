@@ -6,10 +6,4 @@
 #include "SimpleIni.h"
 #include "logger.h"
 
-#include "../src/BruteBash/BruteForce.h"
-#include "../src/BruteMagic/BruteMagic.h"
-
-#include "../src/BruteBase.h"
-
-
 using namespace std::literals;

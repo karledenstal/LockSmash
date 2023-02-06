@@ -1,3 +1,5 @@
+#include "BruteForce.h"
+
 BruteForce* BruteForce::GetSingleton() {
     static BruteForce singleton;
     return &singleton;
@@ -106,6 +108,14 @@ float BruteForce::GetWeaponMultiplier(RE::TESObjectWEAP* weapon) {
 float BruteForce::GetSuccessChance(RE::TESObjectWEAP* weapon, RE::ActorValue skillUsed, float fSkillReq, bool lockIsFrosted) {
     Settings* Settings = Settings::GetSingleton();
     RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
+    float fBluntWeaponBuff =
+        weapon->HasKeywordInList(RE::TESForm::LookupByEditorID<RE::BGSListForm>("_BF_BluntWeapons"), false)
+            ? 1.5f
+            : 0.0f;
+    float fTwoHandedBuff =
+        weapon->HasKeywordInList(RE::TESForm::LookupByEditorID<RE::BGSListForm>("_BF_TwoHandedTypes"), false) 
+            ? 1.5f
+            : 0.0f;
     float fWeaponForce = GetWeaponMultiplier(weapon);
     float fWeaponSkill = player->GetActorBase()->GetActorValue(skillUsed);
     float fBaseValue = player->GetActorBase()->GetBaseActorValue(skillUsed);
@@ -113,9 +123,8 @@ float BruteForce::GetSuccessChance(RE::TESObjectWEAP* weapon, RE::ActorValue ski
     float fStamina = player->GetActorBase()->GetActorValue(RE::ActorValue::kStamina) / 50;
     float fMagicka = player->GetActorBase()->GetActorValue(RE::ActorValue::kMagicka) / 50;
     float useAttribute = weapon->IsBound() ? fStamina + fMagicka : fStamina;
-    
     float fFrostLockDebuff = lockIsFrosted ? Settings->magic.getFrostLockBuff() : 0.0f;
-    float fResult = fSkillCalc + useAttribute + fBaseValue + static_cast<float>(fWeaponForce) + fFrostLockDebuff;
+    float fResult = fSkillCalc + useAttribute + fBaseValue + static_cast<float>(fWeaponForce) + fFrostLockDebuff + fTwoHandedBuff + fBluntWeaponBuff;
     
     logger::info("fResult: {}", fResult);
 

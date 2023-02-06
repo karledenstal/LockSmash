@@ -1,3 +1,5 @@
+#include "BruteMagic.h"
+
 BruteMagic* BruteMagic::GetSingleton() {
     static BruteMagic singleton;
     return &singleton;

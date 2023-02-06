@@ -1,4 +1,5 @@
 #include "Settings.h"
+#include "BruteBase.h"
 
 BruteBase* BruteBase::GetSingleton() {
     static BruteBase singleton;
@@ -106,7 +107,7 @@ void BruteBase::UnlockWithWeapon(RE::TESObjectREFR* refr, RE::TESObjectWEAP* wea
 
     auto fChanceOfSuccess = BruteForce::GetSingleton()->GetSuccessChance(weapon, skillUsed, skillReq, BruteMagic::GetSingleton()->lockMagicProps.getLockIsFrosted());
     
-    if ((rand() % 100) < fChanceOfSuccess || !Settings::GetSingleton()->basic.isSkillRequirementEnabled()) {
+    if ((rand() % 101) < fChanceOfSuccess || !Settings::GetSingleton()->basic.isSkillRequirementEnabled()) {
         GetSingleton()->UnlockTarget(refr, player);
         BruteForce::GetSingleton()->IncreaseSkillExperience(skillUsed, refr->GetLockLevel(), player);
     } else {
@@ -120,7 +121,7 @@ void BruteBase::UnlockWithMagic(RE::TESObjectREFR* refr, RE::SpellItem* spell) {
     RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
     auto fChanceOfSuccess = BruteMagic::GetSingleton()->GetSuccessChance(spell, GetSingleton()->GetSkillRequirement(refr->GetLockLevel()));
         
-    if ((rand() % 100) < fChanceOfSuccess || !Settings::GetSingleton()->basic.isSkillRequirementEnabled()) {
+    if ((rand() % 101) < fChanceOfSuccess || !Settings::GetSingleton()->basic.isSkillRequirementEnabled()) {
         GetSingleton()->UnlockTarget(refr, player);
         BruteMagic::GetSingleton()->IncreaseMagicSkill(spell->GetAssociatedSkill(), player, refr->GetLockLevel());
     } else {
@@ -219,7 +220,7 @@ void BruteBase::CreateDetection(RE::TESObjectREFR* refr, RE::PlayerCharacter* pl
         logger::info("This is not owned by the player!!");
     } else if (refr->GetActorOwner() != player->GetActorBase() && !IsAContainer) {
         logger::info("This is not a container");
-        player->TrespassAlarm(refr, refr->GetActorOwner(), 25);
+        player->TrespassAlarm(refr, refr->GetActorOwner(), 1000);
     } else {
         logger::info("This is owned by the player");
     }

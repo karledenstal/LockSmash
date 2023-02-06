@@ -1,5 +1,6 @@
 #include "Settings.h"
 #include "Papyrus.h"
+#include "../src/BruteBase.h"
 
 void SetupLog() {
     auto logsFolder = SKSE::log::log_directory();

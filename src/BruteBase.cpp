@@ -156,7 +156,7 @@ void BruteBase::DisplayNoWeaponUnlock(BruteForce::Unlock::Flag flag) {
 
 void BruteBase::DisplaySealedByFate(RE::LOCK_LEVEL lockLevel) {
     if (lockLevel == RE::LOCK_LEVEL::kRequiresKey) {
-        RE::DebugNotification("This lock is sealed by Fate");
+        RE::DebugNotification("This is sealed by Fate");
     }
 }
 

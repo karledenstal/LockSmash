@@ -1,7 +1,7 @@
 #include "../src/BruteBash/BruteForce.h"
 #include "../src/BruteMagic/BruteMagic.h"
 
-class BruteBase : public RE::BSTEventSink<RE::TESHitEvent>, public BruteForce {
+class BruteBase : public RE::BSTEventSink<RE::TESHitEvent>, public BruteForce, public BruteMagic {
 	public:
         BruteBase() = default;
         BruteBase(const BruteBase&) = delete;

@@ -19,11 +19,13 @@ class Settings {
             bool onlyAllowBlunt();
             bool onlyAllowTwoHanded();
             bool isSkillRequirementEnabled();
+            bool isWeaponTypeRequirementEnabled();
             
             bool bEnabled{true};
             bool bOnlyBlunt{false};
             bool bOnlyTwoHanded{false};
             bool bEnableSkillRequirement{true};
+            bool bEnableWeaponTypeRequirement{true};
         } basic;
 
         struct Magic {
@@ -31,6 +33,7 @@ class Settings {
 
             bool isMagicEnabled();
             bool allowShockToUnlock();
+            bool allowAlteration();
             bool onlyFireAndForget();
             bool isConcentratedDamageDebuffEnabled();
             
@@ -41,6 +44,7 @@ class Settings {
             bool bAllowShockToUnlock{false};
             bool bOnlyFireAndForget{false};
             bool bConcentratedDamageDebuff{true};
+            bool bAllowAlteration{true};
             
             float fConcentratedDamageDebuff{10.0f};
             float fFrostedLockBuff{8.0f};

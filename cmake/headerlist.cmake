@@ -5,5 +5,6 @@ set(headers ${headers}
 	src/BruteBase.h
 	src/Papyrus.h
 	src/Detection.h
+	src/SmashOpen.hpp
 	include/logger.h
 )

@@ -5,4 +5,5 @@ set(sources ${sources}
 	src/BruteBase.cpp
 	src/Papyrus.cpp
 	src/Detection.cpp
+	src/SmashOpen.cpp
 )

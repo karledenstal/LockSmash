@@ -81,7 +81,11 @@ void SmashOpen::UnlockWithMagic(RE::TESObjectREFR* refr, RE::SpellItem* spell) {
 
         if (skillReqEnabled) {
             // Run & get success chance to calculate unlocks
-            logger::info("Run & get success chance to calculate unlocks");
+            float fChanceOfSuccess = GetSingleton()->GetMagicSuccessChance(spell, refr->GetLockLevel());
+
+            if ((rand() % 101) < fChanceOfSuccess) {
+                GetSingleton()->UnlockIt(refr->GetLock());
+            }
         } else {
             // If skill is not a requirement, just unlock it
             GetSingleton()->UnlockIt(refr->GetLock());
@@ -122,9 +126,15 @@ float SmashOpen::GetMagicSuccessChance(RE::SpellItem* spellUsed, RE::LOCK_LEVEL 
     float fTwoHandedBonus = spellUsed->IsTwoHanded() ? 5.0f : 0.0f;
     float fResult = (fSkillCalc + fMagicka + fTwoHandedBonus + fBaseAssocSkill) - fConcentratedDebuff;
 
-     if (fResult < 0.0f) {
+    logger::info("fResult {}", fResult);
+
+    // if fResult is smaller than 0, then return minChance value
+    if (fResult < 0.0f) {
         return settings->successChance.getMinChance();
-    } else if (fResult > 100.0f) {
+    }
+     
+   // if fResult is bigger than 100, then return maxChance value
+    if (fResult > 100.0f) {
         return settings->successChance.getMaxChance();
     }
 

@@ -7,15 +7,14 @@ When hitting a lock with a weapon following should be taken into consideration:
 - Skill in weapon/armor type (two handed or one handed / heavy armor or light armor)
 - Weapon type (blunt or sharp)
 - Weapon material (steel, silver, dwarven, elven, orcish, nordic, glass, ebony, stalhrim, daedric, dragonbone)
-- Lock type (novice, apprentice, adept, expert, master)
+- Skill requirement (novice, apprentice, adept, expert, master)
 
 Use base damage of weapon to calculate damage to lock
 
 When hitting a lock with a spell following should be taken into consideration:
 - Skill in destruction
-- Spell type (fire, frost, shock)
 - Spell level (novice, apprentice, adept, expert, master)
-- Lock type (novice, apprentice, adept, expert, master)
+- Skill requirement (novice, apprentice, adept, expert, master)
 
 
 This is my first SKSE plugin. Other mods exists like this, but couldn't find one that did it in an SKSE plugin, so used it as a learning experience. Will probably work on this more to polish it in the future.

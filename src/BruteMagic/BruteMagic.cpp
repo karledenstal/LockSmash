@@ -111,9 +111,9 @@ float BruteMagic::GetSuccessChance(RE::SpellItem* spell, float fSkillReq) {
     logger::info("fResult {}", fResult);
 
     if (fResult < 0.0f) {
-        return settings->successChance.getMaxChance();
-    } else if (fResult > 100.0f) {
         return settings->successChance.getMinChance();
+    } else if (fResult > 100.0f) {
+        return settings->successChance.getMaxChance();
     }
 
     return fResult;

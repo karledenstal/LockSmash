@@ -33,4 +33,7 @@ private:
     void UnlockWithMagic(RE::TESObjectREFR* refr, RE::SpellItem* spell);
     bool MagicCanUnlock(RE::EffectSetting* effect);
     bool IsAllowedToUnlock(RE::SpellItem* spell);
+    void UnlockIt(RE::REFR_LOCK* lock);
+    float GetMagicSuccessChance(RE::SpellItem* spellUsed, RE::LOCK_LEVEL lockLevel);
+    float GetSkillReq(RE::LOCK_LEVEL lockLevel);
 };

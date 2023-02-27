@@ -129,9 +129,9 @@ float BruteForce::GetSuccessChance(RE::TESObjectWEAP* weapon, RE::ActorValue ski
     logger::info("fResult: {}", fResult);
 
     if (fResult < 0.0f) {
-        return Settings->successChance.getMaxChance();
-    } else if (fResult > 100.0f) {
         return Settings->successChance.getMinChance();
+    } else if (fResult > 100.0f) {
+        return Settings->successChance.getMaxChance();
     }
     
     return fResult;

@@ -65,8 +65,6 @@ RE::BSEventNotifyControl BruteBase::ProcessEvent(const RE::TESHitEvent* event, R
                 } else {
                     RE::DebugNotification("This lock is too sturdy for this weapon");
                 }
-
-                return RE::BSEventNotifyControl::kContinue;
             }
         
             // if the player attacks with magic
@@ -91,11 +89,8 @@ RE::BSEventNotifyControl BruteBase::ProcessEvent(const RE::TESHitEvent* event, R
                         RE::DebugNotification("This magic isn't sufficient");
                     }
                 }
-                return RE::BSEventNotifyControl::kContinue;
             }
         }
-        
-        return RE::BSEventNotifyControl::kContinue;
     }
 
     return RE::BSEventNotifyControl::kContinue;

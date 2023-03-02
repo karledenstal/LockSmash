@@ -1,6 +1,6 @@
 #include "Settings.h"
 #include "Papyrus.h"
-#include "../src/BruteBase.h"
+#include "SmashOpen.hpp"
 
 void SetupLog() {
     auto logsFolder = SKSE::log::log_directory();
@@ -17,11 +17,10 @@ void SetupLog() {
 void OnInit(SKSE::MessagingInterface::Message* msg) { 
     switch (msg->type) {
         case SKSE::MessagingInterface::kDataLoaded:
-            logger::info("BruteForce: Data loaded");
             try {
                 Settings::GetSingleton()->LoadSettings();
                 auto* eventSource = RE::ScriptEventSourceHolder::GetSingleton();
-                eventSource->AddEventSink<RE::TESHitEvent>(BruteBase::GetSingleton());
+                eventSource->AddEventSink<RE::TESHitEvent>(SmashOpen::GetSingleton());
             } catch (...) {
                 logger::error("Exception caught when loading settings! Default settings will be used");
             };

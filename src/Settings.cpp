@@ -20,7 +20,6 @@ void Settings::LoadSettings() {
         magic.Load(ini);
         successChance.Load(ini);
         skills.Load(ini);
-        multipliers.Load(ini);
     };
 
     readMCM(defaultPath);
@@ -33,9 +32,11 @@ bool Settings::Basic::isEnabled() { return bEnabled; };
 bool Settings::Basic::onlyAllowBlunt() { return bOnlyBlunt; };
 bool Settings::Basic::onlyAllowTwoHanded() { return bOnlyTwoHanded; };
 bool Settings::Basic::isSkillRequirementEnabled() { return bEnableSkillRequirement; };
+bool Settings::Basic::isWeaponTypeRequirementEnabled() { return bEnableWeaponTypeRequirement; };
 
 bool Settings::Magic::isMagicEnabled() { return bEnableMagic; };
 bool Settings::Magic::allowShockToUnlock() { return bAllowShockToUnlock; };
+bool Settings::Magic::allowAlteration() { return bAllowAlteration; };
 bool Settings::Magic::onlyFireAndForget() { return bOnlyFireAndForget; };
 bool Settings::Magic::isConcentratedDamageDebuffEnabled() { return bConcentratedDamageDebuff; };
 float Settings::Magic::getFrostLockBuff() { return fFrostedLockBuff; }
@@ -58,6 +59,7 @@ void Settings::Magic::Load(CSimpleIniA& a_ini) {
 
     detail::config(a_ini, bEnableMagic, section, "bEnableMagic");
     detail::config(a_ini, bAllowShockToUnlock, section, "bAllowShockToUnlock");
+    detail::config(a_ini, bAllowAlteration, section, "bAllowAlteration");
     detail::config(a_ini, bOnlyFireAndForget, section, "bOnlyFireAndForget");
     detail::config(a_ini, bConcentratedDamageDebuff, section, "bConcentratedDamageDebuff");
     detail::config(a_ini, fConcentratedDamageDebuff, section, "fConcentratedDamageDebuff");
@@ -71,24 +73,7 @@ void Settings::Basic::Load(CSimpleIniA& a_ini) {
     detail::config(a_ini, bOnlyBlunt, section, "bOnlyBlunt");
     detail::config(a_ini, bOnlyTwoHanded, section, "bOnlyTwoHanded");
     detail::config(a_ini, bEnableSkillRequirement, section, "bEnableSkillRequirement");
-}
-
-void Settings::Multipliers::Load(CSimpleIniA& a_ini) {
-    static const char* section = "Multipliers";
-
-    detail::config(a_ini, fIron, section, "fIron");
-    detail::config(a_ini, fSteel, section, "fSteel");
-    detail::config(a_ini, fSilver, section, "fSilver");
-    detail::config(a_ini, fImperial, section, "fImperial");
-    detail::config(a_ini, fElven, section, "fElven");
-    detail::config(a_ini, fDwarven, section, "fDwarven");
-    detail::config(a_ini, fOrcish, section, "fOrcish");
-    detail::config(a_ini, fNordic, section, "fNordic");
-    detail::config(a_ini, fEbony, section, "fEbony");
-    detail::config(a_ini, fStalhrim, section, "fStalhrim");
-    detail::config(a_ini, fGlass, section, "fGlass");
-    detail::config(a_ini, fDaedric, section, "fDaedric");
-    detail::config(a_ini, fDragonbone, section, "fDragonbone");
+    detail::config(a_ini, bEnableWeaponTypeRequirement, section, "bEnableWeaponTypeRequirement");
 }
 
 void Settings::Skills::Load(CSimpleIniA& a_ini) {

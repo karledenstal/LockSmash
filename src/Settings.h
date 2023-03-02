@@ -19,11 +19,13 @@ class Settings {
             bool onlyAllowBlunt();
             bool onlyAllowTwoHanded();
             bool isSkillRequirementEnabled();
+            bool isWeaponTypeRequirementEnabled();
             
             bool bEnabled{true};
             bool bOnlyBlunt{false};
             bool bOnlyTwoHanded{false};
             bool bEnableSkillRequirement{true};
+            bool bEnableWeaponTypeRequirement{true};
         } basic;
 
         struct Magic {
@@ -31,6 +33,7 @@ class Settings {
 
             bool isMagicEnabled();
             bool allowShockToUnlock();
+            bool allowAlteration();
             bool onlyFireAndForget();
             bool isConcentratedDamageDebuffEnabled();
             
@@ -41,6 +44,7 @@ class Settings {
             bool bAllowShockToUnlock{false};
             bool bOnlyFireAndForget{false};
             bool bConcentratedDamageDebuff{true};
+            bool bAllowAlteration{true};
             
             float fConcentratedDamageDebuff{10.0f};
             float fFrostedLockBuff{8.0f};
@@ -70,24 +74,6 @@ class Settings {
             float fExpertSkillIncrease{55.0f};
             float fMasterSkillIncrease{75.0f};
         } skills;
-
-        struct Multipliers {
-            void Load(CSimpleIniA& a_ini);
-            
-            float fIron{0.0f};
-            float fSteel{15.0f};
-            float fSilver{13.0f};
-            float fImperial{16.0f};
-            float fElven{19.0f};
-            float fDwarven{21.0f};
-            float fOrcish{30.0f};
-            float fNordic{28.0f};
-            float fEbony{37.0f};
-            float fStalhrim{35.0f};
-            float fGlass{26.5f};
-            float fDaedric{40.0f};
-            float fDragonbone{45.0f};
-        } multipliers;
 
         // thx PO3
         private:

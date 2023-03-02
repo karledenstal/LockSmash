@@ -6,23 +6,24 @@ SmashOpen* SmashOpen::GetSingleton() {
     return &singleton;
 }
 
+bool SmashOpen::LockMagicProps::getLockProps(SmashOpen::LockMagicProps::LockProp prop) {
+    switch (prop) { 
+    case SmashOpen::LockMagicProps::LockProp::kBurning:
+        return SmashOpen::GetSingleton()->lockMagicProps.lockIsBurning;
+    case SmashOpen::LockMagicProps::LockProp::kShocked:
+        return SmashOpen::GetSingleton()->lockMagicProps.lockIsShocked;
+    default:
+        return SmashOpen::GetSingleton()->lockMagicProps.lockIsFrosted;
+    }
+}
+
 RE::BSEventNotifyControl SmashOpen::ProcessEvent(const RE::TESHitEvent* event,
                                                  RE::BSTEventSource<RE::TESHitEvent>*){
-    Settings* settings = Settings::GetSingleton();
-
-    if (event && event->target && event->source && event->cause && settings && settings->basic.isEnabled()) {
+    if (Initialize(event)) {
         logger::info("SmashOpenSKSE: Enabled");
-        auto* sourceAsWeapon = RE::TESForm::LookupByID(event->source)->As<RE::TESObjectWEAP>();
-        auto* sourceAsMagic = RE::TESForm::LookupByID(event->source)->As<RE::SpellItem>();
 
-        if (sourceAsMagic && !sourceAsWeapon && settings->magic.isMagicEnabled()) {
-            logger::info("Attacks with spell: {}", sourceAsMagic->GetName());
-            GetSingleton()->UnlockWithMagic(event->target->As<RE::TESObjectREFR>(), sourceAsMagic);
-        }
-
-        if (!sourceAsMagic && sourceAsWeapon) {
-            logger::info("Attacks with weapon: {}", sourceAsWeapon->GetName());
-        }
+        // unlock that shit
+        Unlock(event->target, event->source);
 
         if (event->target->GetLockLevel() == RE::LOCK_LEVEL::kRequiresKey) {
             RE::DebugNotification("This is sealed by Fate");
@@ -32,11 +33,17 @@ RE::BSEventNotifyControl SmashOpen::ProcessEvent(const RE::TESHitEvent* event,
     return RE::BSEventNotifyControl::kContinue;
 }
 
-bool SmashOpen::MagicCanUnlock(RE::EffectSetting* effect) {
-    return effect->HasKeywordInList(RE::TESForm::LookupByEditorID<RE::BGSListForm>("_BF_AllowedMagic"), false);
+bool SmashOpen::Initialize(const RE::TESHitEvent* event) { 
+    Settings* settings = Settings::GetSingleton(); 
+    return event && event->target && event->source && event->cause && settings && settings->basic.isEnabled() &&
+           event->target->IsLocked() && event->cause->GetFormID() == 0x14;
 }
 
-bool SmashOpen::IsAllowedToUnlock(RE::SpellItem* spell) {
+bool SmashOpen::MagicCanUnlock(RE::EffectSetting* effect) {
+    return effect->HasKeyword("MagicDamageFrost") || effect->HasKeyword("MagicDamageFire");
+}
+
+bool SmashOpen::IsSpellAllowedToUnlock(RE::SpellItem* spell) {
     Settings* settings = Settings::GetSingleton();
     bool bAllowShock = settings->magic.allowShockToUnlock();
     bool bAllowAlteration = settings->magic.allowAlteration();
@@ -45,7 +52,7 @@ bool SmashOpen::IsAllowedToUnlock(RE::SpellItem* spell) {
 
     for (auto*& effect : spell->effects) {
         bool correctKeyword = bAllowShock && effect->baseEffect->HasKeyword("MagicDamageShock") ||
-                              GetSingleton()->MagicCanUnlock(effect->baseEffect);
+                              MagicCanUnlock(effect->baseEffect);
 
         if (correctKeyword) {
             shouldUnlock = true;
@@ -53,43 +60,66 @@ bool SmashOpen::IsAllowedToUnlock(RE::SpellItem* spell) {
         }
     }
 
-    if (!shouldUnlock && bAllowAlteration && spell->GetAssociatedSkill() == RE::ActorValue::kAlteration) {
-        shouldUnlock = true;
+    if (bOnlyFF && spell->GetCastingType() != RE::MagicSystem::CastingType::kFireAndForget) {
+        return false;
     }
 
-    if (shouldUnlock && bOnlyFF && spell->GetCastingType() != RE::MagicSystem::CastingType::kFireAndForget) {
-        shouldUnlock = false;
+    if (bAllowAlteration && spell->GetAssociatedSkill() == RE::ActorValue::kAlteration || shouldUnlock) {
+        return true;
     }
 
     return shouldUnlock;
 }
 
-void SmashOpen::UnlockIt(RE::REFR_LOCK* lock) {
-    lock->SetLocked(false);
+void SmashOpen::UnlockIt(RE::TESObjectREFRPtr target, RE::ActorValue skillUsed) {
+    auto* player = RE::PlayerCharacter::GetSingleton();
+
+    // unlock that motherfrickin lock
+    target->GetLock()->SetLocked(false);
+    // play some shitty sound
     RE::PlaySound("NPCHumanWoodChopSD");
+
+    // increase player skill
+    player->AddSkillExperience(skillUsed, GetSkillIncrease(target->GetLockLevel()));
+
+    // detection event???
 }
 
-void SmashOpen::UnlockWithMagic(RE::TESObjectREFR* refr, RE::SpellItem* spell) {
+void SmashOpen::Unlock(RE::TESObjectREFRPtr target, RE::FormID source) {
     Settings* settings = Settings::GetSingleton();
     bool skillReqEnabled = settings->basic.isSkillRequirementEnabled();
-    bool spellIsAllowed = GetSingleton()->IsAllowedToUnlock(spell);
+    
+    if (skillReqEnabled) {
+        auto* sourceAs = RE::TESForm::LookupByID(source);
+        float fHitCalc = 0.0f;
+        auto skillToIncrease = RE::ActorValue::kNone;
 
-    if (!spellIsAllowed) {
-        RE::DebugNotification("This magic can not break this lock");
-    } else {
-        logger::info("This magic can unlock");
-
-        if (skillReqEnabled) {
-            // Run & get success chance to calculate unlocks
-            float fChanceOfSuccess = GetSingleton()->GetMagicSuccessChance(spell, refr->GetLockLevel());
-
-            if ((rand() % 101) < fChanceOfSuccess) {
-                GetSingleton()->UnlockIt(refr->GetLock());
-            }
-        } else {
-            // If skill is not a requirement, just unlock it
-            GetSingleton()->UnlockIt(refr->GetLock());
+        if (sourceAs->GetFormType() == RE::FormType::Weapon) {
+            fHitCalc = CalculateWeaponSuccessChance(sourceAs->As<RE::TESObjectWEAP>(), target->GetLockLevel());
+            skillToIncrease = GetAssociatedSkill(sourceAs->As<RE::TESObjectWEAP>());
+        } else if (sourceAs->GetFormType() == RE::FormType::Spell) {
+            bool spellIsAllowed = IsSpellAllowedToUnlock(sourceAs->As<RE::SpellItem>());
+            fHitCalc = spellIsAllowed
+                           ? CalculateSpellSuccessChance(sourceAs->As<RE::SpellItem>(), target->GetLockLevel())
+                           : 0.0f;
+            skillToIncrease = sourceAs->As<RE::SpellItem>()->GetAssociatedSkill();
         }
+
+       // if fHitCalc is smaller than 0, then return minChance value
+        if (fHitCalc < 0.0f) {
+            fHitCalc = settings->successChance.getMinChance();
+        } else if (fHitCalc > 100.0f) {
+            fHitCalc = settings->successChance.getMaxChance();
+        }
+
+        if ((rand() % 101) < fHitCalc) {
+            UnlockIt(target, skillToIncrease);
+        } else {
+            RE::DebugNotification("This lock won't budge");
+        }
+    } else {
+        // If skill is not a requirement, just unlock it
+        UnlockIt(target, RE::ActorValue::kNone);
     }
 }
 
@@ -111,32 +141,67 @@ float SmashOpen::GetSkillReq(RE::LOCK_LEVEL lockLevel) {
     }
 }
 
-float SmashOpen::GetMagicSuccessChance(RE::SpellItem* spellUsed, RE::LOCK_LEVEL lockLevel) {
+RE::ActorValue SmashOpen::GetAssociatedSkill(RE::TESObjectWEAP* weapon) {
+    bool isTwoHanded = weapon->IsTwoHandedAxe() || weapon->IsTwoHandedSword();
+
+    if (weapon->IsHandToHandMelee()) {
+        return RE::ActorValue::kHeavyArmor;
+    }
+
+    if (isTwoHanded) {
+        return RE::ActorValue::kTwoHanded;
+    }
+
+    return RE::ActorValue::kOneHanded;
+}
+
+float SmashOpen::GetSkillIncrease(RE::LOCK_LEVEL lockLevel) {
+    Settings* settings = Settings::GetSingleton();
+
+    switch (lockLevel) {
+        case RE::LOCK_LEVEL::kVeryEasy:
+            return settings->skills.fNoviceSkillIncrease;
+        case RE::LOCK_LEVEL::kEasy:
+            return settings->skills.fApprenticeSkillIncrease;
+        case RE::LOCK_LEVEL::kAverage:
+            return settings->skills.fAdeptSkillIncrease;
+        case RE::LOCK_LEVEL::kHard:
+            return settings->skills.fExpertSkillIncrease;
+        case RE::LOCK_LEVEL::kVeryHard:
+            return settings->skills.fMasterSkillIncrease;
+        default:
+            return 0.0f;
+    }
+}
+
+float SmashOpen::CalculateSpellSuccessChance(RE::SpellItem* spellUsed, RE::LOCK_LEVEL lockLevel) {
     Settings* settings = Settings::GetSingleton();
     RE::TESNPC* player = RE::PlayerCharacter::GetSingleton()->GetActorBase();
 
     bool concentrateSpellDebuff = settings->magic.isConcentratedDamageDebuffEnabled() &&
                                   spellUsed->GetCastingType() == RE::MagicSystem::CastingType::kConcentration;
     float fConcentratedDebuff = concentrateSpellDebuff ? settings->magic.getConcentratedDebuff() : 0.0f;
-    float fSkillReq = GetSingleton()->GetSkillReq(lockLevel);
+    float fSkillReq = GetSkillReq(lockLevel);
     float fAssocSkill = player->GetActorValue(spellUsed->GetAssociatedSkill());
     float fBaseAssocSkill = player->GetBaseActorValue(spellUsed->GetAssociatedSkill());
     float fMagicka = player->GetBaseActorValue(RE::ActorValue::kMagicka) / 5;
     float fSkillCalc = fAssocSkill - static_cast<float>(fSkillReq);
     float fTwoHandedBonus = spellUsed->IsTwoHanded() ? 5.0f : 0.0f;
-    float fResult = (fSkillCalc + fMagicka + fTwoHandedBonus + fBaseAssocSkill) - fConcentratedDebuff;
 
-    logger::info("fResult {}", fResult);
+    return (fSkillCalc + fMagicka + fTwoHandedBonus + fBaseAssocSkill) - fConcentratedDebuff;
+}
 
-    // if fResult is smaller than 0, then return minChance value
-    if (fResult < 0.0f) {
-        return settings->successChance.getMinChance();
-    }
-     
-   // if fResult is bigger than 100, then return maxChance value
-    if (fResult > 100.0f) {
-        return settings->successChance.getMaxChance();
-    }
+float SmashOpen::CalculateWeaponSuccessChance(RE::TESObjectWEAP* weaponUsed, RE::LOCK_LEVEL lockLevel) {
+    Settings* settings = Settings::GetSingleton();
+    auto* player = RE::PlayerCharacter::GetSingleton()->GetActorBase();
 
-    return fResult;
+    float fWeaponDmg = weaponUsed->GetAttackDamage();
+    float fSkillReq = static_cast<float>(GetSkillReq(lockLevel));
+    float fWeaponSkill = player->GetActorValue(GetAssociatedSkill(weaponUsed));
+    float fStamina = player->GetActorValue(RE::ActorValue::kStamina) / 50;
+    float fFrostLockDebuff = lockMagicProps.getLockProps(SmashOpen::LockMagicProps::LockProp::kFrosted)
+                                 ? settings->magic.getFrostLockBuff()
+                                 : 0.0f;
+
+    return (fWeaponSkill - fSkillReq) + (fWeaponDmg / 2) + fFrostLockDebuff + fStamina;
 }

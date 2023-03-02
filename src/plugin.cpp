@@ -17,7 +17,6 @@ void SetupLog() {
 void OnInit(SKSE::MessagingInterface::Message* msg) { 
     switch (msg->type) {
         case SKSE::MessagingInterface::kDataLoaded:
-            logger::info("SmashOpenSKSE: Data loaded");
             try {
                 Settings::GetSingleton()->LoadSettings();
                 auto* eventSource = RE::ScriptEventSourceHolder::GetSingleton();

@@ -6,7 +6,7 @@ Only run logic if target has a lock
 When hitting a lock with a weapon following should be taken into consideration:
 - Skill in weapon/armor type (two handed or one handed / heavy armor or light armor)
 - Weapon type (blunt or sharp)
-- Weapon material (steel, silver, dwarven, elven, orcish, nordic, glass, ebony, stalhrim, daedric, dragonbone)
+- Weapon dmg
 - Skill requirement (novice, apprentice, adept, expert, master)
 
 Use base damage of weapon to calculate damage to lock

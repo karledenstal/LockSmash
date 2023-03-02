@@ -75,24 +75,6 @@ class Settings {
             float fMasterSkillIncrease{75.0f};
         } skills;
 
-        struct Multipliers {
-            void Load(CSimpleIniA& a_ini);
-            
-            float fIron{0.0f};
-            float fSteel{15.0f};
-            float fSilver{13.0f};
-            float fImperial{16.0f};
-            float fElven{19.0f};
-            float fDwarven{21.0f};
-            float fOrcish{30.0f};
-            float fNordic{28.0f};
-            float fEbony{37.0f};
-            float fStalhrim{35.0f};
-            float fGlass{26.5f};
-            float fDaedric{40.0f};
-            float fDragonbone{45.0f};
-        } multipliers;
-
         // thx PO3
         private:
             struct detail {

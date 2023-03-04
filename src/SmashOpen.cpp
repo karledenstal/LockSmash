@@ -71,22 +71,19 @@ bool SmashOpen::IsSpellAllowedToUnlock(RE::SpellItem* spell) {
     return shouldUnlock;
 }
 
-void SmashOpen::UnlockIt(RE::TESObjectREFRPtr target, RE::ActorValue skillUsed) {
-    auto* player = RE::PlayerCharacter::GetSingleton();
-
+void SmashOpen::UnlockIt(RE::TESObjectREFRPtr target) {
     // unlock that motherfrickin lock
     target->GetLock()->SetLocked(false);
     // play some shitty sound
     RE::PlaySound("NPCHumanWoodChopSD");
-
-    // increase player skill
-    player->AddSkillExperience(skillUsed, GetSkillIncrease(target->GetLockLevel()));
-
-    // detection event???
+    CreateDetectionEvent();
 }
+
+void SmashOpen::CreateDetectionEvent() { logger::info("Create a detection event somehow??"); }
 
 void SmashOpen::Unlock(RE::TESObjectREFRPtr target, RE::FormID source) {
     Settings* settings = Settings::GetSingleton();
+    RE::PlayerCharacter* player = RE::PlayerCharacter::GetSingleton();
     bool skillReqEnabled = settings->basic.isSkillRequirementEnabled();
     
     if (skillReqEnabled) {
@@ -113,13 +110,14 @@ void SmashOpen::Unlock(RE::TESObjectREFRPtr target, RE::FormID source) {
         }
 
         if ((rand() % 101) < fHitCalc) {
-            UnlockIt(target, skillToIncrease);
+            UnlockIt(target);
+            player->AddSkillExperience(skillToIncrease, GetSkillIncrease(target->GetLockLevel()));
         } else {
             RE::DebugNotification("This lock won't budge");
         }
     } else {
         // If skill is not a requirement, just unlock it
-        UnlockIt(target, RE::ActorValue::kNone);
+        UnlockIt(target);
     }
 }
 
@@ -142,13 +140,11 @@ float SmashOpen::GetSkillReq(RE::LOCK_LEVEL lockLevel) {
 }
 
 RE::ActorValue SmashOpen::GetAssociatedSkill(RE::TESObjectWEAP* weapon) {
-    bool isTwoHanded = weapon->IsTwoHandedAxe() || weapon->IsTwoHandedSword();
-
     if (weapon->IsHandToHandMelee()) {
         return RE::ActorValue::kHeavyArmor;
     }
 
-    if (isTwoHanded) {
+    if (weapon->IsTwoHandedAxe() || weapon->IsTwoHandedSword()) {
         return RE::ActorValue::kTwoHanded;
     }
 

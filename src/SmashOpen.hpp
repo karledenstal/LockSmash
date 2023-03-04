@@ -18,35 +18,16 @@ private:
         bool lockIsBurning = false;
     } lockMagicProps;
 
-    enum class WeaponType {
-        kBlunt,
-        kTwoHanded,
-        kWarhammer,  // if both blunt & two handed is checked
-        kAll,
-    };
-        
-    enum class MagicType {
-        kShock,
-        kFire,
-        kFrost,
-    };
-
-    enum class Status {
-        kSuccess,
-        kFailed,
-        kSkillFailed,
-        kWrongType
-    };
-
     bool Initialize(const RE::TESHitEvent* event);
 
     RE::ActorValue GetAssociatedSkill(RE::TESObjectWEAP* weapon);
     bool MagicCanUnlock(RE::EffectSetting* effect);
     bool IsSpellAllowedToUnlock(RE::SpellItem* spell);
-    void UnlockIt(RE::TESObjectREFRPtr target, RE::ActorValue skillUsed);
+    void UnlockIt(RE::TESObjectREFRPtr target);
     float GetSkillReq(RE::LOCK_LEVEL lockLevel);
     void Unlock(RE::TESObjectREFRPtr target, RE::FormID source);
     float CalculateWeaponSuccessChance(RE::TESObjectWEAP* weaponUsed, RE::LOCK_LEVEL lockLevel);
     float CalculateSpellSuccessChance(RE::SpellItem* spellUsed, RE::LOCK_LEVEL lockLevel);
     float GetSkillIncrease(RE::LOCK_LEVEL lockLevel);
+    void CreateDetectionEvent();
 };
